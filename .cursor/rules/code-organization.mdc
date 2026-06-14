@@ -1,0 +1,55 @@
+---
+alwaysApply: true
+---
+
+# Custom cursor rules for Atomic Design UI Component Architecture in Next.js
+
+# General project description
+instructions:
+  - "This project follows Atomic Design principles for UI component organization."
+  - "Components are organized into atoms, molecules, organisms, templates, and pages."
+  - "Strict dependency rules between layers must be followed to avoid circular dependencies."
+
+# Folder structure scopes and organization
+folders:
+  - path: "src/components/atoms/**"
+    scope: "Atoms"
+    description: "Smallest reusable UI elements, pure presentation-focused."
+    import_rules:
+      - "Must NOT import molecules, organisms, templates, or pages."
+  - path: "src/components/molecules/**"
+    scope: "Molecules"
+    description: "Groups of atoms, no business logic."
+    import_rules:
+      - "May ONLY import atoms."
+      - "Must NOT import organisms, templates, or pages."
+  - path: "src/components/organisms/**"
+    scope: "Organisms"
+    description: "Complex UI composed of atoms and molecules, business logic allowed."
+    import_rules:
+      - "May import atoms and molecules."
+      - "Must NOT import templates or pages."
+  - path: "src/components/templates/**"
+    scope: "Templates"
+    description: "Page-level layouts, no business logic."
+    import_rules:
+      - "May import atoms, molecules, and organisms."
+  - path: "src/app/**"
+    scope: "Pages"
+    description: "Route-level implementations inside Next.js app dir."
+    import_rules:
+      - "May import from any UI layer."
+
+# Composition and design rules
+rules:
+  - "Atoms must be generic, reusable, and purely presentational with no business logic."
+  - "Molecules must also be free of business logic."
+  - "Organisms and pages contain feature-specific UI behavior and business logic."
+  - "Favor composition over inheritance for building components."
+  - "Extract common UI patterns into reusable atoms or molecules."
+  - "Use lowercase dashed folder names for all components."
+
+# Additional instructions
+additional:
+  - "Enforce dependency rules programmatically via lint or build step if possible."
+  - "Avoid circular dependencies between component layers."

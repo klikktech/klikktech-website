@@ -1,0 +1,29 @@
+import { ProjectCard } from "@/components/molecules/project-card";
+import { homePortfolioContent } from "@/lib/content/home";
+
+export function PortfolioFeatured() {
+  const { label, title, items } = homePortfolioContent;
+
+  return (
+    <section id="projects" className="scroll-mt-section py-xl">
+      <div className="flex flex-col gap-xl">
+        <div className="flex flex-col gap-md">
+          <span className="text-label-md text-on-tertiary-container">
+            {label}
+          </span>
+          <h2 className="text-headline-lg text-on-surface">{title}</h2>
+        </div>
+
+        <div className="flex flex-col gap-xl md:flex-row">
+          {items.map((project) => (
+            <ProjectCard
+              key={project.id}
+              project={project}
+              className="min-w-0 md:flex-1"
+            />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
