@@ -17,6 +17,8 @@ export type ProjectPreviewItem = {
   badge: string;
   image: string;
   imageAlt: string;
+  images?: { src: string; alt: string }[];
+  upcoming?: boolean;
 };
 
 export type TestimonialItem = {
@@ -33,7 +35,7 @@ export const homeHeroContent = {
   description:
     "We build fast, reliable web applications and data-driven SEO strategies that help growing businesses rank higher, convert better, and scale with confidence.",
   primaryCta: { label: "Start Your Project", href: "/contact" },
-  secondaryCta: { label: "View Our Work", href: "/projects" },
+  secondaryCta: { label: "View Our Work", href: "/#projects" },
   image: {
     src: "/images/hero-dashboard.svg",
     alt: "Dashboard showing performance analytics on a laptop screen",
@@ -93,24 +95,79 @@ export const homePortfolioContent = {
   title: "Selected Projects",
   items: [
     {
-      id: "retailstream",
-      title: "RetailStream Web Hub",
+      id: "sigma-wholesale",
+      title: "Sigma Wholesale Platform",
       description:
-        "A unified inventory and analytics dashboard for a multi-location retail operation.",
+        "A full-stack wholesale platform built for Sigma, comprising a self-service customer portal for bulk ordering and account management, and an internal admin dashboard for inventory, pricing, and order fulfillment.",
       href: "/projects",
       badge: "Web App",
-      image: "/images/project-dashboard.svg",
-      imageAlt: "Dark analytics dashboard interface",
+      image: "/images/sigma-wholesale/customer/customer-1.png",
+      imageAlt: "Sigma Wholesale platform screenshot",
+      images: [
+        {
+          src: "/images/sigma-wholesale/customer/customer-1.png",
+          alt: "Sigma Wholesale — customer portal home screen",
+        },
+        {
+          src: "/images/sigma-wholesale/customer/customer-2.png",
+          alt: "Sigma Wholesale — customer portal product catalogue",
+        },
+        {
+          src: "/images/sigma-wholesale/customer/customer-3.png",
+          alt: "Sigma Wholesale — customer portal product detail",
+        },
+        {
+          src: "/images/sigma-wholesale/customer/customer-4.png",
+          alt: "Sigma Wholesale — customer portal cart and checkout",
+        },
+        {
+          src: "/images/sigma-wholesale/customer/customer-5.png",
+          alt: "Sigma Wholesale — customer portal order history",
+        },
+        {
+          src: "/images/sigma-wholesale/customer/customer-6.png",
+          alt: "Sigma Wholesale — customer portal account settings",
+        },
+        {
+          src: "/images/sigma-wholesale/customer/customer-7.png",
+          alt: "Sigma Wholesale — customer portal invoice view",
+        },
+        {
+          src: "/images/sigma-wholesale/admin/admin-1.png",
+          alt: "Sigma Wholesale — admin portal overview dashboard",
+        },
+        {
+          src: "/images/sigma-wholesale/admin/admin-2.png",
+          alt: "Sigma Wholesale — admin portal inventory management",
+        },
+        {
+          src: "/images/sigma-wholesale/admin/admin-3.png",
+          alt: "Sigma Wholesale — admin portal customer accounts",
+        },
+        {
+          src: "/images/sigma-wholesale/admin/admin-4.png",
+          alt: "Sigma Wholesale — admin portal order queue",
+        },
+        {
+          src: "/images/sigma-wholesale/admin/admin-5.png",
+          alt: "Sigma Wholesale — admin portal pricing rules",
+        },
+        {
+          src: "/images/sigma-wholesale/admin/admin-6.png",
+          alt: "Sigma Wholesale — admin portal reports and analytics",
+        },
+      ],
     },
     {
-      id: "localreach",
-      title: "LocalReach SEO Campaign",
+      id: "school-portal",
+      title: "EduTrack — School Management Portal",
       description:
-        "Local SEO strategy and content program that increased qualified search visibility across target markets.",
-      href: "/projects",
-      badge: "SEO Growth",
-      image: "/images/project-map.svg",
-      imageAlt: "World map with connected growth nodes",
+        "A unified platform for schools to manage student records, attendance, grading, and parent communication. Currently in active development.",
+      href: "/contact",
+      badge: "Coming Soon",
+      image: "",
+      imageAlt: "",
+      upcoming: true,
     },
   ] satisfies ProjectPreviewItem[],
 } as const;
@@ -118,28 +175,28 @@ export const homePortfolioContent = {
 export const homeTestimonialsContent = {
   title: "Success Stories",
   description:
-    "Teams trust Klikktek to ship reliable web products and SEO programs with precision and accountability.",
+    "Hear directly from the people who worked with Klikktek to bring Sigma Wholesale to life.",
   items: [
     {
-      id: "testimonial-1",
+      id: "alex-sohani",
       quote:
-        "Klikktek delivered a fast, polished web app on schedule. Their technical decisions were clear, practical, and built for scale.",
-      name: "Sarah Jenkins",
-      role: "Operations Director, Northline Retail",
+        "We came to Klikktek with a fragmented operation — spreadsheets everywhere, no central system. They built us a platform that finally brought everything together. The customer portal alone changed how our buyers interact with us daily.",
+      name: "Alex Sohani",
+      role: "Owner, Sigma Wholesale",
     },
     {
-      id: "testimonial-2",
+      id: "ankit-sohani",
       quote:
-        "Our organic traffic improved within months. The SEO roadmap was structured, measurable, and aligned with our business goals.",
-      name: "David Park",
-      role: "VP of Marketing, LocalReach Co.",
+        "What impressed me most was how quickly they understood our wholesale model. The admin dashboard gave us real visibility into inventory and orders for the first time. It's become the backbone of how we run the business.",
+      name: "Ankit Sohani",
+      role: "Owner, Sigma Wholesale",
     },
     {
-      id: "testimonial-3",
+      id: "sumanth-sara",
       quote:
-        "The support bot reduced repetitive tickets immediately. Integration was smooth and the handoff to our team was seamless.",
-      name: "Elena Rodriguez",
-      role: "Lead Architect, Meridian Systems",
+        "Day to day, the platform has made my job dramatically easier. Managing customer accounts, tracking orders, updating pricing — things that used to take hours now take minutes. The team was responsive throughout and actually listened to how we work.",
+      name: "Sumanth Sara",
+      role: "Manager, Sigma Wholesale",
     },
   ] satisfies TestimonialItem[],
 } as const;

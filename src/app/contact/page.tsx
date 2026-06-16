@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { ContactHero } from "@/components/organisms/contact-hero";
 import { InquirySection } from "@/components/organisms/inquiry-section";
-import { SocialProofGrid } from "@/components/organisms/social-proof-grid";
+import { PaymentSection } from "@/components/organisms/payment-section";
 import {
   MarketingContainer,
   MarketingLayout,
@@ -18,8 +18,8 @@ export default function ContactPage() {
     <MarketingLayout footerVariant="contact">
       <MarketingContainer>
         <ContactHero />
-        <SocialProofGrid />
         <InquirySection />
+        <PaymentSection />
       </MarketingContainer>
     </MarketingLayout>
   );

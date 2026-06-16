@@ -64,7 +64,7 @@ export const servicesBentoContent = {
     },
     {
       label: "Delivery Time",
-      value: "8-12w",
+      value: "2-3 weeks",
       description:
         "Typical timeline from discovery and architecture through launch-ready delivery.",
       variant: "light",
@@ -105,7 +105,7 @@ export const servicesBentoContent = {
     description:
       "Tell us about your goals and we will recommend the right mix of web, automation, and SEO services.",
     primaryCta: { label: "Get a Free Quote", href: "/contact" },
-    secondaryCta: { label: "View Projects", href: "/projects" },
+    secondaryCta: { label: "View Projects", href: "/#projects" },
   },
 } as const;
 

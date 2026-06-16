@@ -23,7 +23,6 @@ export const siteConfig = {
 
 export const mainNavLinks: NavLink[] = [
   { label: "Services", href: "/services" },
-  { label: "Projects", href: "/projects" },
   { label: "Contact", href: "/contact" },
 ];
 
@@ -39,7 +38,7 @@ export const footerColumns: FooterColumn[] = [
   {
     title: "Company",
     links: [
-      { label: "Projects", href: "/projects" },
+      { label: "Projects", href: "/#projects" },
       { label: "Privacy Policy", href: "#" },
     ],
   },
@@ -54,7 +53,7 @@ export const contactFooterColumns: FooterColumn[] = [
     title: "Offerings",
     links: [
       { label: "Services", href: "/services" },
-      { label: "Projects", href: "/projects" },
+      { label: "Projects", href: "/#projects" },
     ],
   },
   {

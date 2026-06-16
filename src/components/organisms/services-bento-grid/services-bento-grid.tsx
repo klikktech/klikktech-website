@@ -7,15 +7,30 @@ import { MetricCard } from "@/components/molecules/metric-card";
 import { servicesBentoContent } from "@/lib/content/services";
 import { cn } from "@/lib/utils/cn";
 
+const techStack = ["Next.js", "React", "TypeScript", "Node.js", "PostgreSQL", "Tailwind CSS"];
+
+const webAppDeliverables = [
+  "Full project discovery and architecture planning",
+  "Responsive UI built to your brand guidelines",
+  "REST or GraphQL API with secure authentication",
+  "Performance-optimised, Lighthouse 90+ score",
+  "Deployment setup with CI/CD pipeline",
+  "30-day post-launch support included",
+];
+
 export function ServicesBentoGrid() {
   const { webApplications, metrics, chatbots, seo, cta } = servicesBentoContent;
 
   return (
     <section className="py-xl">
       <div className="flex flex-col gap-md">
+
+        {/* Row 1: Web Applications + Metrics */}
         <div className="flex flex-col gap-md lg:flex-row">
           <article className="flex min-w-0 flex-[2] flex-col overflow-hidden rounded-card border border-outline-variant bg-surface-container-lowest interactive-card hover:shadow-card-hover">
             <div className="flex flex-col gap-lg p-lg">
+
+              {/* Header */}
               <div className="flex items-start gap-md">
                 <Icon icon={Code2} size="lg" className="text-on-surface" />
                 <div className="flex flex-col gap-sm">
@@ -28,6 +43,7 @@ export function ServicesBentoGrid() {
                 </div>
               </div>
 
+              {/* Feature tiles */}
               <div className="flex flex-col gap-md sm:flex-row sm:flex-wrap">
                 {webApplications.features.map((feature) => (
                   <div
@@ -43,16 +59,40 @@ export function ServicesBentoGrid() {
                   </div>
                 ))}
               </div>
-            </div>
 
-            <div className="mt-auto border-t border-outline-variant">
-              <Image
-                src={webApplications.image.src}
-                alt={webApplications.image.alt}
-                width={720}
-                height={240}
-                className="aspect-[3/1] w-full object-cover"
-              />
+              {/* Tech stack */}
+              <div className="flex flex-col gap-sm">
+                <p className="text-label-md text-on-surface-variant">Tech Stack</p>
+                <div className="flex flex-wrap gap-sm">
+                  {techStack.map((tech) => (
+                    <span
+                      key={tech}
+                      className="rounded-tag border border-outline-variant bg-surface-container px-sm py-xs text-label-md text-on-surface-variant normal-case"
+                    >
+                      {tech}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Divider */}
+              <div className="h-px w-full bg-outline-variant" />
+
+              {/* What you get checklist */}
+              <div className="flex flex-col gap-sm">
+                <p className="text-label-md text-on-surface-variant">What's Included</p>
+                <ul className="grid grid-cols-1 gap-sm sm:grid-cols-2">
+                  {webAppDeliverables.map((item) => (
+                    <li key={item} className="flex items-start gap-sm">
+                      <span className="mt-0.5 inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-secondary-container text-on-tertiary-container">
+                        <Icon icon={Check} size="sm" />
+                      </span>
+                      <span className="text-body-sm text-on-surface-variant">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
             </div>
           </article>
 
@@ -63,6 +103,7 @@ export function ServicesBentoGrid() {
           </div>
         </div>
 
+        {/* Row 2: Intelligent Chatbots */}
         <article className="overflow-hidden rounded-card border border-outline-variant bg-surface-container-lowest interactive-card hover:shadow-card-hover">
           <div className="flex flex-col lg:flex-row">
             <div className="flex min-w-0 flex-1 flex-col gap-lg p-lg">
@@ -95,18 +136,19 @@ export function ServicesBentoGrid() {
               </ul>
             </div>
 
-            <div className="relative min-h-64 min-w-0 flex-1 border-t border-outline-variant lg:min-h-full lg:border-l lg:border-t-0">
+            <div className="relative min-w-0 border-t border-outline-variant lg:w-64 lg:shrink-0 lg:border-l lg:border-t-0">
               <Image
                 src={chatbots.image.src}
                 alt={chatbots.image.alt}
-                width={480}
-                height={480}
-                className="h-full min-h-64 w-full object-cover lg:min-h-full"
+                width={256}
+                height={256}
+                className="h-48 w-full object-cover lg:h-full"
               />
             </div>
           </div>
         </article>
 
+        {/* Row 3: SEO + CTA */}
         <div className="flex flex-col gap-md lg:flex-row">
           <article className="flex min-w-0 flex-[2] flex-col gap-lg rounded-card border border-outline-variant bg-surface-container-lowest p-lg interactive-card hover:shadow-card-hover">
             <div className="flex items-start gap-md">
@@ -168,6 +210,7 @@ export function ServicesBentoGrid() {
             </div>
           </article>
         </div>
+
       </div>
     </section>
   );
