@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import { JsonLd } from "@/components/atoms/json-ld";
 import { CtaBanner } from "@/components/organisms/cta-banner";
 import { HeroSection } from "@/components/organisms/hero-section";
 import { PortfolioFeatured } from "@/components/organisms/portfolio-featured";
@@ -8,18 +8,39 @@ import {
   MarketingContainer,
   MarketingLayout,
 } from "@/components/templates/marketing-layout";
+import { createPageMetadata } from "@/lib/seo/metadata";
+import { homePageSeo, siteFaqs } from "@/lib/seo/page-seo";
+import {
+  combineSchemas,
+  faqSchema,
+  webPageSchema,
+} from "@/lib/seo/schema";
 
-export const metadata: Metadata = {
-  title: {
-    absolute: "Klikktek | Precision Intelligence",
-  },
-  description:
-    "Functional web solutions and strategic SEO for growing businesses.",
-};
+export const metadata = createPageMetadata({
+  title: homePageSeo.title,
+  description: homePageSeo.description,
+  path: homePageSeo.path,
+  keywords: [
+    homePageSeo.primaryKeyword,
+    ...homePageSeo.secondaryKeywords,
+    ...homePageSeo.semanticKeywords,
+  ],
+  absoluteTitle: true,
+});
+
+const homeSchema = combineSchemas(
+  webPageSchema({
+    path: homePageSeo.path,
+    title: homePageSeo.title,
+    description: homePageSeo.description,
+  }),
+  faqSchema([...siteFaqs]),
+);
 
 export default function HomePage() {
   return (
     <MarketingLayout>
+      <JsonLd data={homeSchema} />
       <MarketingContainer>
         <HeroSection />
         <ServicesPreview />
