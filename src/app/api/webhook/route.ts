@@ -2,11 +2,38 @@ import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { Resend } from "resend";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2026-05-27.dahlia",
-});
+export const dynamic = "force-dynamic";
 
-const resend = new Resend(process.env.RESEND_API_KEY!);
+let stripeClient: Stripe | null = null;
+let resendClient: Resend | null = null;
+
+function getStripe() {
+  if (!stripeClient) {
+    const secretKey = process.env.STRIPE_SECRET_KEY;
+    if (!secretKey) {
+      throw new Error("STRIPE_SECRET_KEY is not configured");
+    }
+
+    stripeClient = new Stripe(secretKey, {
+      apiVersion: "2026-05-27.dahlia",
+    });
+  }
+
+  return stripeClient;
+}
+
+function getResend() {
+  if (!resendClient) {
+    const apiKey = process.env.RESEND_API_KEY;
+    if (!apiKey) {
+      throw new Error("RESEND_API_KEY is not configured");
+    }
+
+    resendClient = new Resend(apiKey);
+  }
+
+  return resendClient;
+}
 
 // Format cents to dollar string e.g. 50000 → "$500.00"
 function formatAmount(cents: number): string {
@@ -17,6 +44,8 @@ function formatAmount(cents: number): string {
 }
 
 export async function POST(req: NextRequest) {
+  const stripe = getStripe();
+  const resend = getResend();
   const body = await req.text();
   const signature = req.headers.get("stripe-signature");
 
