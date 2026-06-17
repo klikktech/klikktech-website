@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { ContactHero } from "@/components/organisms/contact-hero";
 import { InquirySection } from "@/components/organisms/inquiry-section";
 import { PaymentSection } from "@/components/organisms/payment-section";
+import { PaymentSuccessBanner } from "@/components/organisms/payment-section/payment-success-banner";
 import {
   MarketingContainer,
   MarketingLayout,
@@ -17,6 +19,10 @@ export default function ContactPage() {
   return (
     <MarketingLayout footerVariant="contact">
       <MarketingContainer>
+        {/* Suspense required because PaymentSuccessBanner reads searchParams */}
+        <Suspense fallback={null}>
+          <PaymentSuccessBanner />
+        </Suspense>
         <ContactHero />
         <InquirySection />
         <PaymentSection />

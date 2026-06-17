@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 
 export default function ProjectsPage() {
   return (
-    <MarketingLayout showFooterNewsletter>
+    <MarketingLayout>
       <MarketingContainer>
         <PageHero
           title={projectsHeroContent.title}

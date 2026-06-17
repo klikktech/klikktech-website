@@ -2,9 +2,7 @@ import type { Metadata } from "next";
 import { PageHero } from "@/components/organisms/page-hero";
 import { ServicesBentoGrid } from "@/components/organisms/services-bento-grid";
 import { ServicesOverview } from "@/components/organisms/services-overview";
-import {
-  servicesHeroContent,
-} from "@/lib/content/services";
+import { servicesHeroContent } from "@/lib/content/services";
 import {
   MarketingContainer,
   MarketingLayout,
@@ -18,7 +16,7 @@ export const metadata: Metadata = {
 
 export default function ServicesPage() {
   return (
-    <MarketingLayout showFooterNewsletter>
+    <MarketingLayout>
       <MarketingContainer>
         <PageHero
           label={servicesHeroContent.label}
