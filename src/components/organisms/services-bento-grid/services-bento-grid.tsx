@@ -7,7 +7,7 @@ import { MetricCard } from "@/components/molecules/metric-card";
 import { servicesBentoContent } from "@/lib/content/services";
 import { cn } from "@/lib/utils/cn";
 
-const techStack = ["Next.js", "React", "TypeScript", "Node.js", "PostgreSQL", "Tailwind CSS"];
+const techStack = ["Next.js", "React", "Angular", "TypeScript", "Node.js", "Python Flask", "FastAPI", "PostgreSQL", "Tailwind CSS", "AWS", "GCP", "Gemini Enterprise"];
 
 const webAppDeliverables = [
   "Full project discovery and architecture planning",

@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight, Mail, Share2 } from "lucide-react";
 import { Icon } from "@/components/atoms/icon";
@@ -39,11 +40,18 @@ export function SiteFooter({
               <Link
                 href="/"
                 className={cn(
-              "font-display text-body-md font-bold text-primary",
+             "inline-flex shrink-0 items-center",
               "rounded-button focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-on-tertiary-container focus-visible:ring-offset-2",
             )}
               >
-                {siteConfig.name}
+              <Image
+                src={siteConfig.logo.src}
+                alt={siteConfig.logo.alt}
+                width={siteConfig.logo.width}
+                height={siteConfig.logo.height}
+                className="h-8 w-auto"
+                priority
+              />
               </Link>
               <p className="text-body-sm text-on-surface-variant">
                 {contactFooterTagline}
@@ -80,11 +88,17 @@ export function SiteFooter({
             <Link
               href="/"
               className={cn(
-              "font-display text-body-md font-bold text-primary",
-              "rounded-button focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-on-tertiary-container focus-visible:ring-offset-2",
-            )}
+                "inline-flex shrink-0 items-center",
+                "rounded-button focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-on-tertiary-container focus-visible:ring-offset-2",
+              )}
             >
-              {siteConfig.name}
+              <Image
+                src={siteConfig.logo.src}
+                alt={siteConfig.logo.alt}
+                width={siteConfig.logo.width}
+                height={siteConfig.logo.height}
+                className="h-8 w-auto"
+              />
             </Link>
             <p className="text-body-sm text-on-surface-variant">
               {siteConfig.copyright}

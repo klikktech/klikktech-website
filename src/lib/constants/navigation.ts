@@ -15,6 +15,12 @@ export type FooterColumn = {
 
 export const siteConfig = {
   name: "Klikktek",
+  logo: {
+    src: "/images/klikktek-logo-horizontal.svg",
+    alt: "KlikkTek",
+    width: 1024,
+    height: 175,
+  },
   tagline: "Precision Intelligence for the Modern Enterprise.",
   copyright: "© 2024 Klikktek. Practical Digital Solutions for Growing Businesses.",
   contactEmail: "intelligence@klikktek.com",
