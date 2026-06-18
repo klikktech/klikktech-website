@@ -14,7 +14,7 @@ export function PageHero({
   const isCentered = align === "center";
 
   return (
-    <section className="pt-xl">
+    <section className="pt-md">
       <div
         className={
           isCentered

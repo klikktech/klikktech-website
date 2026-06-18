@@ -4,7 +4,7 @@ export function ContactHero() {
   const { title, description } = contactHeroContent;
 
   return (
-    <section className="pt-xl">
+    <section className="pt-md">
       <div className="mx-auto flex max-w-3xl flex-col gap-md text-center">
         <h1 className="text-display text-on-surface max-lg:text-headline-lg-mobile">
           {title}
