@@ -15,6 +15,12 @@ export type FooterColumn = {
 
 export const siteConfig = {
   name: "Klikktek",
+  logo: {
+    src: "/images/klikktek-logo-horizontal.svg",
+    alt: "KlikkTek",
+    width: 1024,
+    height: 175,
+  },
   tagline: "Precision Intelligence for the Modern Enterprise.",
   copyright: "© 2026 Klikktek. Practical Digital Solutions for Growing Businesses.",
   contactEmail: "intelligence@klikktek.com",
@@ -23,7 +29,6 @@ export const siteConfig = {
 
 export const mainNavLinks: NavLink[] = [
   { label: "Services", href: "/services" },
-  { label: "Projects", href: "/projects" },
   { label: "Contact", href: "/contact" },
 ];
 
@@ -39,7 +44,7 @@ export const footerColumns: FooterColumn[] = [
   {
     title: "Company",
     links: [
-      { label: "Projects", href: "/projects" },
+      { label: "Projects", href: "/#projects" },
       { label: "Privacy Policy", href: "#" },
     ],
   },
@@ -54,7 +59,7 @@ export const contactFooterColumns: FooterColumn[] = [
     title: "Offerings",
     links: [
       { label: "Services", href: "/services" },
-      { label: "Projects", href: "/projects" },
+      { label: "Projects", href: "/#projects" },
     ],
   },
   {
@@ -74,4 +79,4 @@ export const contactFooterColumns: FooterColumn[] = [
 ];
 
 export const contactFooterTagline =
-  "© 2026 Klikktek. Precision Intelligence for the Modern Enterprise." as const;
+  "© 2024 Klikktek. Precision Intelligence for the Modern Enterprise." as const;

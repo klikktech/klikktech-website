@@ -1,0 +1,1 @@
+export { ProjectCarouselCard } from "./project-carousel-card";

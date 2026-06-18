@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { NavLink } from "@/components/molecules/nav-link";
 import { MobileNav } from "@/components/molecules/mobile-nav";
@@ -14,11 +15,18 @@ export function SiteHeader() {
             <Link
               href="/"
               className={cn(
-                "font-display text-body-md font-bold text-primary",
+                "inline-flex shrink-0 items-center",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-on-tertiary-container focus-visible:ring-offset-2",
               )}
             >
-              {siteConfig.name}
+              <Image
+                src={siteConfig.logo.src}
+                alt={siteConfig.logo.alt}
+                width={siteConfig.logo.width}
+                height={siteConfig.logo.height}
+                className="h-8 w-auto"
+                priority
+              />
             </Link>
           </div>
 

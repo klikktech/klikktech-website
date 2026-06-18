@@ -12,6 +12,10 @@ import {
   faqSchema,
   webPageSchema,
 } from "@/lib/seo/schema";
+import type { Metadata } from "next";
+import { Suspense } from "react";
+import { PaymentSection } from "@/components/organisms/payment-section";
+import { PaymentSuccessBanner } from "@/components/organisms/payment-section/payment-success-banner";
 import {
   MarketingContainer,
   MarketingLayout,
@@ -53,9 +57,13 @@ export default function ContactPage() {
             { label: "Contact" },
           ]}
         />
+        {/* Suspense required because PaymentSuccessBanner reads searchParams */}
+        <Suspense fallback={null}>
+          <PaymentSuccessBanner />
+        </Suspense>
         <ContactHero />
-        <SocialProofGrid />
         <InquirySection />
+        <PaymentSection />
       </MarketingContainer>
     </MarketingLayout>
   );

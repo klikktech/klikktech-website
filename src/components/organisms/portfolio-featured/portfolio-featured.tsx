@@ -1,4 +1,4 @@
-import { ProjectCard } from "@/components/molecules/project-card";
+import { ProjectCarouselCard } from "@/components/molecules/project-carousel-card";
 import { homePortfolioContent } from "@/lib/content/home";
 
 export function PortfolioFeatured() {
@@ -16,7 +16,7 @@ export function PortfolioFeatured() {
 
         <div className="flex flex-col gap-xl md:flex-row">
           {items.map((project) => (
-            <ProjectCard
+            <ProjectCarouselCard
               key={project.id}
               project={project}
               className="min-w-0 md:flex-1"
