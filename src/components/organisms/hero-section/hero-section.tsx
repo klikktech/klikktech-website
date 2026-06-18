@@ -56,6 +56,7 @@ export function HeroSection() {
               alt={image.alt}
               width={800}
               height={560}
+              sizes="(max-width: 768px) 100vw, 50vw"
               priority
               className="aspect-[10/7] w-full object-cover"
             />

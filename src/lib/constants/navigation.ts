@@ -22,7 +22,7 @@ export const siteConfig = {
     height: 175,
   },
   tagline: "Precision Intelligence for the Modern Enterprise.",
-  copyright: "© 2024 Klikktek. Practical Digital Solutions for Growing Businesses.",
+  copyright: "© 2026 Klikktek. Practical Digital Solutions for Growing Businesses.",
   contactEmail: "intelligence@klikktek.com",
   contactAddress: "100 Tech Plaza, San Francisco, CA",
 } as const;
