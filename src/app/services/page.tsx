@@ -51,7 +51,7 @@ const servicesSchema = combineSchemas(
 
 export default function ServicesPage() {
   return (
-    <MarketingLayout showFooterNewsletter>
+    <MarketingLayout>
       <JsonLd data={servicesSchema} />
       <MarketingContainer>
         <Breadcrumbs
