@@ -1,26 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 
-export const dynamic = "force-dynamic";
-
-let resendClient: Resend | null = null;
-
-function getResend() {
-  if (!resendClient) {
-    const apiKey = process.env.RESEND_API_KEY;
-    if (!apiKey) {
-      throw new Error("RESEND_API_KEY is not configured");
-    }
-
-    resendClient = new Resend(apiKey);
-  }
-
-  return resendClient;
-}
-
 export async function POST(req: NextRequest) {
   try {
-    const resend = getResend();
+    if (!process.env.RESEND_API_KEY) {
+      console.error("RESEND_API_KEY is not set");
+      return NextResponse.json(
+        { error: "Server configuration error: RESEND_API_KEY missing." },
+        { status: 500 },
+      );
+    }
+
+    const resend = new Resend(process.env.RESEND_API_KEY);
+
     const { email } = await req.json();
 
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -30,9 +22,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Notify the team
-    await resend.emails.send({
-      from: "Klikktek <onboarding@resend.dev>",
+    // Run sequentially so we can clearly attribute which call fails
+    const teamSend = await resend.emails.send({
+      from: "Klikktek <contact@klikktek.com>",
       to: "contact@klikktek.com",
       replyTo: email,
       subject: `New Contact Request — ${email}`,
@@ -60,22 +52,29 @@ export async function POST(req: NextRequest) {
       `,
     });
 
-    // Send confirmation to the visitor
-    await resend.emails.send({
-      from: "Klikktek <onboarding@resend.dev>",
+    if (teamSend.error) {
+      console.error("Team email failed:", JSON.stringify(teamSend.error));
+      return NextResponse.json(
+        { error: `Email failed: ${teamSend.error.message ?? "unknown Resend error"}` },
+        { status: 502 },
+      );
+    }
+
+    const visitorSend = await resend.emails.send({
+      from: "Klikktek <contact@klikktek.com>",
       to: email,
       subject: "We'll be in touch — Klikktek",
       html: `
         <div style="font-family: Inter, ui-sans-serif, system-ui, sans-serif; max-width: 560px; margin: 0 auto; padding: 32px 24px; color: #191c1e;">
           <h1 style="font-size: 24px; font-weight: 700; margin: 0 0 8px;">Thanks for reaching out.</h1>
           <p style="font-size: 16px; color: #45464d; margin: 0 0 32px; line-height: 1.6;">
-            We've received your contact request and will get back to you within one business day to discuss how we can help grow your online presence.
+            We've received your contact request and will get back to you within one business day.
           </p>
           <div style="background: #eceef0; border-radius: 12px; padding: 24px; margin-bottom: 32px;">
             <p style="font-size: 14px; color: #45464d; margin: 0 0 8px;">In the meantime, you can:</p>
             <ul style="font-size: 14px; color: #191c1e; margin: 0; padding-left: 20px; line-height: 2;">
               <li>Browse our <a href="https://klikktek.com/services" style="color: #000;">services</a></li>
-              <li>Email us directly at <a href="mailto:contact@klikktek.com" style="color: #000;">contact@klikktek.com</a></li>
+              <li>Email us at <a href="mailto:contact@klikktek.com" style="color: #000;">contact@klikktek.com</a></li>
             </ul>
           </div>
           <hr style="border: none; border-top: 1px solid #c6c6cd; margin: 32px 0;" />
@@ -84,11 +83,21 @@ export async function POST(req: NextRequest) {
       `,
     });
 
-    return NextResponse.json({ success: true });
+    if (visitorSend.error) {
+      // Team email succeeded but visitor confirmation failed — log it but don't fail the whole request
+      console.error("Visitor email failed:", JSON.stringify(visitorSend.error));
+    }
+
+    return NextResponse.json({
+      success: true,
+      teamEmailId: teamSend.data?.id,
+      visitorEmailId: visitorSend.data?.id ?? null,
+    });
   } catch (err) {
-    console.error("CTA contact error:", err);
+    const message = err instanceof Error ? err.message : String(err);
+    console.error("CTA contact route error:", message);
     return NextResponse.json(
-      { error: "Failed to send. Please try again." },
+      { error: `Failed to send: ${message}` },
       { status: 500 },
     );
   }
