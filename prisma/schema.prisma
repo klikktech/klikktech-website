@@ -1,0 +1,97 @@
+// Control-plane schema for the super admin portal — a separate app/DB from
+// any retail-software tenant's own siloed Postgres database (silo model,
+// see retail-software's product-plan.md sections 2 & 8).
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// =========================================================================
+// ADMIN AUTH — single internal-ops login, mirrors retail-software's
+// Staff/StaffSession hashed-token session pattern (core/logic/auth.ts).
+// =========================================================================
+
+model AdminUser {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  fullName     String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  sessions AdminSession[]
+}
+
+model AdminSession {
+  id         String   @id @default(cuid())
+  adminId    String
+  admin      AdminUser @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  tokenHash  String   @unique
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  lastUsedAt DateTime @default(now())
+
+  @@index([adminId])
+}
+
+// =========================================================================
+// TENANT REGISTRY
+// =========================================================================
+
+enum TenantStatus {
+  TRIAL
+  ACTIVE
+  SUSPENDED
+}
+
+model Tenant {
+  id     String       @id @default(cuid())
+  name   String
+  slug   String       @unique
+  status TenantStatus @default(TRIAL)
+
+  // planId values and featureOverrides shape ({ enabled?: string[], disabled?: string[] })
+  // must stay in sync with retail-software's core/logic/features.ts — there is no shared
+  // package between the two repos, so this is a documented manual contract, not a type-checked one.
+  planId           String @default("basic")
+  featureOverrides Json?
+
+  // Connection string to this tenant's own siloed Postgres database (retail-software's
+  // StoreSettings table, id=1) — used only by the "sync to tenant" action to push
+  // planId/featureOverrides there. Plaintext in this pass (no secrets vault yet); acceptable
+  // for a single internal tenant, revisit before onboarding real customers.
+  databaseUrl String
+
+  contactEmail String?
+  notes        String?
+
+  // =======================================================================
+  // ONBOARDING — store configuration the tenant fills in themselves via a
+  // one-time magic-link form (src/app/onboarding/[token]), synced into that
+  // tenant's own StoreSettings row on submit. storeName is deliberately a
+  // separate field from `name` above: `name` is the internal registry label
+  // the super admin sets at creation time, storeName is the tenant's own
+  // customer-facing store name.
+  // =======================================================================
+  storeName      String?
+  themeId        String?
+  logoUrl        String?
+  primaryColor   String?
+  secondaryColor String?
+  accentColor    String?
+  contactPhone   String?
+  currency       String?
+  isStoreOpen    Boolean @default(true)
+
+  onboardingTokenHash      String?   @unique
+  onboardingTokenExpiresAt DateTime?
+  onboardingCompletedAt    DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

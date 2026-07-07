@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# prisma generated client (custom output path)
+/src/generated/prisma
+
+# runtime-uploaded files (tenant onboarding logos)
+/public/uploads
