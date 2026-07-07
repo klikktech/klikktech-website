@@ -21,7 +21,7 @@ export default async function AdminDashboardLayout({ children }: { children: Rea
           </form>
         </div>
       </header>
-      <main className="mx-auto max-w-4xl px-lg py-xl">{children}</main>
+      <main className="mx-auto max-w-5xl px-lg py-xl">{children}</main>
     </div>
   );
 }

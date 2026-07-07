@@ -31,6 +31,10 @@ export function updateTenant(id: string, input: TenantInput) {
   return prisma.tenant.update({ where: { id }, data: input });
 }
 
+export function deleteTenant(id: string) {
+  return prisma.tenant.delete({ where: { id } });
+}
+
 export interface FeatureOverridesInput {
   enabled: string[];
   disabled: string[];

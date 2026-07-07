@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { Icon } from "@/components/atoms/icon";
+import { cn } from "@/lib/utils/cn";
 
 export type BreadcrumbItem = {
   label: string;
@@ -9,11 +10,12 @@ export type BreadcrumbItem = {
 
 type BreadcrumbsProps = {
   items: BreadcrumbItem[];
+  className?: string;
 };
 
-export function Breadcrumbs({ items }: BreadcrumbsProps) {
+export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
   return (
-    <nav aria-label="Breadcrumb" className="pt-lg mb-md">
+    <nav aria-label="Breadcrumb" className={cn("mb-md pt-lg", className)}>
       <ol className="flex flex-wrap items-center gap-xs text-body-sm text-on-surface-variant">
         {items.map((item, index) => {
           const isLast = index === items.length - 1;

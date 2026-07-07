@@ -22,15 +22,17 @@ const OPTIONS = [
 
 export function AdminFeatureOverridesEditor({ action, initial }: AdminFeatureOverridesEditorProps) {
   const [state, formAction, pending] = useActionState(action, undefined);
+  const saved = state !== undefined && !state.error && !pending;
 
   return (
-    <form action={formAction} className="flex max-w-lg flex-col gap-md">
+    <form action={formAction} className="flex flex-col gap-md">
       {FEATURE_KEYS.map((key) => (
         <FormField key={key} id={key} label={key}>
           <Select id={key} name={key} options={OPTIONS} defaultValue={initial[key] ?? ""} />
         </FormField>
       ))}
       {state?.error ? <p className="text-body-sm text-error">{state.error}</p> : null}
+      {saved ? <p className="text-body-sm text-[#1e6b3a]">Overrides saved.</p> : null}
       <Button type="submit" disabled={pending} className="self-start">
         {pending ? "Saving…" : "Save overrides"}
       </Button>
