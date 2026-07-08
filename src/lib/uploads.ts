@@ -1,10 +1,7 @@
 import "server-only";
-import { mkdir, unlink, writeFile } from "node:fs/promises";
-import path from "node:path";
+import { put, del } from "@vercel/blob";
 import { randomUUID } from "node:crypto";
-import { siteUrl } from "@/lib/seo/site-config";
 
-const UPLOAD_ROOT = path.join(process.cwd(), "public", "uploads");
 const MAX_SIZE_BYTES = 4 * 1024 * 1024;
 
 const EXTENSION_BY_MIME_TYPE: Record<string, string> = {
@@ -15,11 +12,10 @@ const EXTENSION_BY_MIME_TYPE: Record<string, string> = {
   "image/svg+xml": ".svg",
 };
 
-// Same validation as retail-software's lib/uploads.ts, but returns an
-// ABSOLUTE url (this file is served from klikktech-website's own domain,
-// not the tenant's) since the tenant's retail-software deployment renders
-// logoUrl as a plain external <img src> with no local /uploads of its own
-// copy of the file.
+// Same validation as retail-software's lib/uploads.ts. Returns an absolute
+// Vercel Blob URL — this file is served independently of the tenant's own
+// domain, so the tenant's retail-software deployment just renders logoUrl
+// as a plain external <img src>, same as before.
 export async function saveUploadedImage(file: File, subdir: string): Promise<string> {
   const extension =
     EXTENSION_BY_MIME_TYPE[file.type] ??
@@ -31,21 +27,14 @@ export async function saveUploadedImage(file: File, subdir: string): Promise<str
     throw new Error("Each image must be smaller than 4MB.");
   }
 
-  const dir = path.join(UPLOAD_ROOT, subdir);
-  await mkdir(dir, { recursive: true });
-
-  const filename = `${randomUUID()}${extension}`;
-  await writeFile(path.join(dir, filename), Buffer.from(await file.arrayBuffer()));
-
-  return `${siteUrl.replace(/\/$/, "")}/uploads/${subdir}/${filename}`;
+  const blob = await put(`${subdir}/${randomUUID()}${extension}`, file, { access: "public" });
+  return blob.url;
 }
 
-// Best-effort removal of a logo saved by saveUploadedImage on this host.
+// Best-effort removal of a logo saved by saveUploadedImage. Only attempts
+// deletion for URLs that look like a Vercel Blob URL — anything else (e.g. a
+// manually-entered logo URL) is left alone.
 export async function deleteUploadedImageIfLocal(imageUrl: string): Promise<void> {
-  const base = siteUrl.replace(/\/$/, "");
-  if (!imageUrl.startsWith(`${base}/uploads/`)) return;
-
-  const relativePath = imageUrl.slice(base.length);
-  const filePath = path.join(process.cwd(), "public", relativePath);
-  await unlink(filePath).catch(() => {});
+  if (!imageUrl.includes(".public.blob.vercel-storage.com/")) return;
+  await del(imageUrl).catch(() => {});
 }

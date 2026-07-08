@@ -72,12 +72,29 @@ function parseProvisionInput(
   return { name, slug, planId, contactEmail, notes: notes || null };
 }
 
-// Replaces the old manual flow (super admin hand-typing an already-provisioned
-// databaseUrl): provisions a real local database, runs retail-software's
-// migrations against it, seeds the tenant's first admin login, then creates
-// the control-plane Tenant record pointing at it. Doesn't redirect afterward
-// (unlike a plain create) because the temp password must be shown exactly
-// once in the returned state.
+// Manual fallback for environments where auto-provisioning isn't configured
+// (e.g. deployed on Vercel, with no local Postgres server or sibling
+// retail-software checkout to provision against) — same shape as the
+// original pre-provisioning flow, just registers an already-provisioned
+// databaseUrl.
+export async function createTenantAction(
+  _prevState: FormState | undefined,
+  formData: FormData
+): Promise<FormState> {
+  await requireAdmin();
+  const input = parseTenantInput(formData);
+  if ("error" in input) return input;
+
+  const tenant = await createTenant(input);
+  revalidatePath("/admin");
+  redirect(`/admin/tenants/${tenant.id}`);
+}
+
+// Provisions a real database, runs retail-software's migrations against it,
+// seeds the tenant's first admin login, then creates the control-plane
+// Tenant record pointing at it. Doesn't redirect afterward (unlike a plain
+// create) because the temp password must be shown exactly once in the
+// returned state.
 export async function provisionTenantAction(
   _prevState: ProvisionState | undefined,
   formData: FormData

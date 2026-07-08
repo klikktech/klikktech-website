@@ -11,6 +11,15 @@ function tenantDatabaseName(slug: string): string {
   return `retail_tenant_${slug.replace(/-/g, "_")}`;
 }
 
+// TENANT_DB_ADMIN_URL/RETAIL_SOFTWARE_REPO_PATH only make sense against a
+// local Postgres server + a sibling repo checkout — neither exists in a
+// deployed (e.g. Vercel) environment. Callers use this to fall back to
+// manual tenant registration instead of showing a form that would always
+// fail there.
+export function isAutoProvisioningConfigured(): boolean {
+  return Boolean(process.env.TENANT_DB_ADMIN_URL && process.env.RETAIL_SOFTWARE_REPO_PATH);
+}
+
 function databaseNameFromUrl(databaseUrl: string): string | null {
   try {
     return decodeURIComponent(new URL(databaseUrl).pathname.replace(/^\//, ""));
