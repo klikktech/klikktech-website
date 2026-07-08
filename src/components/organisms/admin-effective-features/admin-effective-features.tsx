@@ -1,0 +1,24 @@
+import { Tag } from "@/components/atoms/tag";
+import { resolveFeatures, type FeatureKey } from "@/core/logic/feature-keys";
+
+type AdminEffectiveFeaturesProps = {
+  planId: string;
+  featureOverrides: unknown;
+};
+
+export function AdminEffectiveFeatures({ planId, featureOverrides }: AdminEffectiveFeaturesProps) {
+  const features = resolveFeatures({ planId, featureOverrides });
+  const sorted = [...features].sort();
+
+  if (sorted.length === 0) {
+    return <p className="text-body-sm text-on-surface-variant">No features enabled.</p>;
+  }
+
+  return (
+    <div className="flex flex-wrap gap-sm">
+      {sorted.map((key: FeatureKey) => (
+        <Tag key={key}>{key}</Tag>
+      ))}
+    </div>
+  );
+}

@@ -61,7 +61,7 @@ Required env vars (see `.env.local`, not committed): `STRIPE_SECRET_KEY`, `NEXT_
 
 ### Super admin portal (`/admin`)
 
-This repo also hosts the **control-plane app** for the separate `retail-software` multi-tenant SaaS project (a silo-model billing platform: one Postgres DB per tenant, no shared `tenant_id` columns). Under that silo model a tenant's feature entitlements live in *that tenant's own* database, not here — so this portal is a **registry + remote control**, not a provisioner: it doesn't create tenant databases/deployments (that's still manual, per retail-software's own deferred-automation build order), it just needs to be told where an already-provisioned tenant lives so it can manage its plan/features going forward.
+This repo also hosts the **control-plane app** for the separate `retail-software` multi-tenant SaaS project (a silo-model billing platform: one Postgres DB per tenant, no shared `tenant_id` columns). Under that silo model a tenant's feature entitlements live in *that tenant's own* database, not here — so this portal is a **registry + remote control** that also provisions new tenant databases locally (see below); a real deployment would swap the local-provisioning step for a cloud provider's API (Neon/RDS) plus a Vercel project per tenant, per retail-software's own plan.
 
 - **Own Postgres + Prisma** (v7, driver-adapter, generator output `src/generated/prisma`, imported as `@/generated/prisma/client`) — entirely separate from any tenant's database. `prisma.config.ts` loads env from `.env.local` (this project's convention) rather than Prisma's `.env` default.
 - **Auth**: `AdminUser`/`AdminSession` (`src/core/logic/admin-auth.ts`) — single internal-ops login, hashed-token session in an `admin_session` cookie, mirrors retail-software's own `Staff`/`StaffSession` pattern. Route-gating uses a Next.js route-group split: `src/app/admin/(auth)/login/` is unguarded, `src/app/admin/(dashboard)/layout.tsx` calls `requireAdmin()` — a single `layout.tsx` directly at `src/app/admin/` would also wrap `/admin/login` and redirect-loop.
@@ -69,6 +69,8 @@ This repo also hosts the **control-plane app** for the separate `retail-software
 - `src/core/logic/feature-keys.ts` — `FEATURE_KEYS`/`PLAN_IDS` are a **manually-synced copy** of retail-software's `core/logic/features.ts`; there's no shared package between the two repos, so keep this list in sync by hand whenever a feature key changes on that side.
 - **The sync mechanism** (`src/core/logic/tenant-sync.ts::syncFeaturesToTenant`) is the part that actually closes the loop: it opens a direct `pg.Client` connection using the tenant's stored `databaseUrl` and runs a parameterized `UPDATE "StoreSettings" SET "planId" = $1, "featureOverrides" = $2 WHERE id = 1` — the exact table/columns retail-software's `core/logic/features.ts::resolveFeatures()` reads. Triggered by a "Sync to tenant DB" button on `/admin/tenants/[id]`, surfaced as a plain success/error message rather than throwing.
 - Tenant create/edit are plain pages (`/admin/tenants/new`, `/admin/tenants/[id]`), not modals — unlike retail-software's own admin (which uses modals per its CLAUDE.md convention), this repo has no `Modal` primitive and is a much smaller two-screen internal tool, so a dedicated component wasn't worth adding.
+- **Automated local provisioning** (`src/core/logic/tenant-provisioning.ts::provisionTenantDatabase`, wired to `provisionTenantAction` behind `/admin/tenants/new`'s form): creates a fresh Postgres database on the same local server that hosts retail-software's sample tenant (`TENANT_DB_ADMIN_URL`, a separate database per tenant rather than a separate server — the local stand-in for a real per-tenant managed instance), shells out to retail-software's own `npx prisma migrate deploy` against it (`RETAIL_SOFTWARE_REPO_PATH` — assumes that repo is checked out as a sibling directory on this machine; a real pipeline would package migrations as a build artifact instead), then seeds just enough via raw `pg` inserts for the tenant to log in for the first time: the `StoreSettings` singleton row (placeholder `storeName`, real values come later from onboarding) and one `TENANT_ADMIN` `Staff` row with a random temp password. That password and the admin email are returned once in the action's response state (never persisted in plaintext, same one-time-reveal pattern as the onboarding link) before the control-plane `Tenant` record is created pointing at the new `databaseUrl`.
+- **Tenant deletion** (`deprovisionTenantDatabase` + `deleteTenantAction` on `/admin/tenants/[id]` danger zone): super admin must type the tenant's exact `name` to confirm. If `databaseUrl` matches the slug-derived `retail_tenant_*` name from provisioning (`canDeprovisionTenantDatabase`), terminates connections and `DROP DATABASE` via `TENANT_DB_ADMIN_URL`, then deletes the control-plane row and any local onboarding logo in `public/uploads`. Externally registered tenants (e.g. seed `retail_sample_tenant`) only get registry removal — the UI warns that the database must be deleted manually.
 
 ### Tenant onboarding (`/onboarding/[token]`)
 
@@ -219,6 +221,9 @@ The tenant's own store configuration (store name, logo, theme, contact info, cur
 │   │   │       ├── index.ts
 │   │   │       └── textarea.tsx
 │   │   ├── molecules
+│   │   │   ├── admin-section-card
+│   │   │   │   ├── admin-section-card.tsx
+│   │   │   │   └── index.ts
 │   │   │   ├── breadcrumbs
 │   │   │   │   ├── breadcrumbs.tsx
 │   │   │   │   └── index.ts
@@ -227,6 +232,9 @@ The tenant's own store configuration (store name, logo, theme, contact info, cur
 │   │   │   │   └── index.ts
 │   │   │   ├── contact-info-block
 │   │   │   │   ├── contact-info-block.tsx
+│   │   │   │   └── index.ts
+│   │   │   ├── copy-button
+│   │   │   │   ├── copy-button.tsx
 │   │   │   │   └── index.ts
 │   │   │   ├── featured-case-study-card
 │   │   │   │   ├── featured-case-study-card.tsx
@@ -267,10 +275,19 @@ The tenant's own store configuration (store name, logo, theme, contact info, cur
 │   │   │   ├── status-badge
 │   │   │   │   ├── index.ts
 │   │   │   │   └── status-badge.tsx
+│   │   │   ├── tenant-status-badge
+│   │   │   │   ├── index.ts
+│   │   │   │   └── tenant-status-badge.tsx
 │   │   │   └── testimonial-card
 │   │   │       ├── index.ts
 │   │   │       └── testimonial-card.tsx
 │   │   ├── organisms
+│   │   │   ├── admin-delete-tenant-form
+│   │   │   │   ├── admin-delete-tenant-form.tsx
+│   │   │   │   └── index.ts
+│   │   │   ├── admin-effective-features
+│   │   │   │   ├── admin-effective-features.tsx
+│   │   │   │   └── index.ts
 │   │   │   ├── admin-feature-overrides-editor
 │   │   │   │   ├── admin-feature-overrides-editor.tsx
 │   │   │   │   └── index.ts
@@ -280,11 +297,17 @@ The tenant's own store configuration (store name, logo, theme, contact info, cur
 │   │   │   ├── admin-onboarding-link-form
 │   │   │   │   ├── admin-onboarding-link-form.tsx
 │   │   │   │   └── index.ts
+│   │   │   ├── admin-onboarding-summary
+│   │   │   │   ├── admin-onboarding-summary.tsx
+│   │   │   │   └── index.ts
 │   │   │   ├── admin-sync-tenant-form
 │   │   │   │   ├── admin-sync-tenant-form.tsx
 │   │   │   │   └── index.ts
 │   │   │   ├── admin-tenant-form
 │   │   │   │   ├── admin-tenant-form.tsx
+│   │   │   │   └── index.ts
+│   │   │   ├── admin-tenant-header
+│   │   │   │   ├── admin-tenant-header.tsx
 │   │   │   │   └── index.ts
 │   │   │   ├── admin-tenants-table
 │   │   │   │   ├── admin-tenants-table.tsx
@@ -318,6 +341,9 @@ The tenant's own store configuration (store name, logo, theme, contact info, cur
 │   │   │   ├── portfolio-featured
 │   │   │   │   ├── index.ts
 │   │   │   │   └── portfolio-featured.tsx
+│   │   │   ├── provision-tenant-form
+│   │   │   │   ├── index.ts
+│   │   │   │   └── provision-tenant-form.tsx
 │   │   │   ├── services-bento-grid
 │   │   │   │   ├── index.ts
 │   │   │   │   └── services-bento-grid.tsx
@@ -353,6 +379,7 @@ The tenant's own store configuration (store name, logo, theme, contact info, cur
 │   │      ├── feature-keys.ts
 │   │      ├── password.ts
 │   │      ├── session-token.ts
+│   │      ├── tenant-provisioning.ts
 │   │      ├── tenant-sync.ts
 │   │      └── tenants.ts
 │   ├── generated

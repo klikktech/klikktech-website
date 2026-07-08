@@ -1,9 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import { useActionState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import { Input } from "@/components/atoms/input";
 import { Select } from "@/components/atoms/select";
+import { Textarea } from "@/components/atoms/textarea";
 import { Button } from "@/components/atoms/button";
+import { Icon } from "@/components/atoms/icon";
 import { FormField } from "@/components/molecules/form-field";
 import { PLAN_IDS } from "@/core/logic/feature-keys";
 
@@ -35,16 +39,20 @@ const PLAN_OPTIONS = PLAN_IDS.map((id) => ({ label: id, value: id }));
 
 export function AdminTenantForm({ action, initial, submitLabel = "Save" }: AdminTenantFormProps) {
   const [state, formAction, pending] = useActionState(action, undefined);
+  const [dbUrlRevealed, setDbUrlRevealed] = useState(false);
+  const saved = state !== undefined && !state.error && !pending;
 
   return (
-    <form action={formAction} className="flex max-w-lg flex-col gap-md">
-      <FormField id="name" label="Name">
-        <Input id="name" name="name" required defaultValue={initial?.name} />
-      </FormField>
-      <FormField id="slug" label="Slug">
-        <Input id="slug" name="slug" required defaultValue={initial?.slug} />
-      </FormField>
-      <div className="grid grid-cols-2 gap-md">
+    <form action={formAction} className="flex flex-col gap-md">
+      <div className="grid gap-md sm:grid-cols-2">
+        <FormField id="name" label="Name">
+          <Input id="name" name="name" required defaultValue={initial?.name} />
+        </FormField>
+        <FormField id="slug" label="Slug">
+          <Input id="slug" name="slug" required defaultValue={initial?.slug} />
+        </FormField>
+      </div>
+      <div className="grid gap-md sm:grid-cols-2">
         <FormField id="status" label="Status">
           <Select id="status" name="status" options={STATUS_OPTIONS} defaultValue={initial?.status ?? "TRIAL"} />
         </FormField>
@@ -52,22 +60,36 @@ export function AdminTenantForm({ action, initial, submitLabel = "Save" }: Admin
           <Select id="planId" name="planId" options={PLAN_OPTIONS} defaultValue={initial?.planId ?? "basic"} />
         </FormField>
       </div>
-      <FormField id="databaseUrl" label="Database URL">
-        <Input
-          id="databaseUrl"
-          name="databaseUrl"
-          required
-          defaultValue={initial?.databaseUrl}
-          placeholder="postgresql://user:pass@host:5432/db"
-        />
-      </FormField>
       <FormField id="contactEmail" label="Contact email">
         <Input id="contactEmail" name="contactEmail" type="email" defaultValue={initial?.contactEmail} />
       </FormField>
       <FormField id="notes" label="Notes">
-        <Input id="notes" name="notes" defaultValue={initial?.notes} />
+        <Textarea id="notes" name="notes" defaultValue={initial?.notes} rows={3} className="min-h-0" />
+      </FormField>
+      <FormField id="databaseUrl" label="Database URL">
+        <div className="flex gap-sm">
+          <Input
+            id="databaseUrl"
+            name="databaseUrl"
+            required
+            type={dbUrlRevealed ? "text" : "password"}
+            defaultValue={initial?.databaseUrl}
+            placeholder="postgresql://user:pass@host:5432/db"
+            className="font-mono text-body-sm"
+          />
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => setDbUrlRevealed((v) => !v)}
+            className="shrink-0 px-md"
+            aria-label={dbUrlRevealed ? "Hide database URL" : "Show database URL"}
+          >
+            <Icon icon={dbUrlRevealed ? EyeOff : Eye} size="sm" aria-hidden />
+          </Button>
+        </div>
       </FormField>
       {state?.error ? <p className="text-body-sm text-error">{state.error}</p> : null}
+      {saved ? <p className="text-body-sm text-[#1e6b3a]">Saved successfully.</p> : null}
       <Button type="submit" disabled={pending} className="self-start">
         {pending ? "Saving…" : submitLabel}
       </Button>

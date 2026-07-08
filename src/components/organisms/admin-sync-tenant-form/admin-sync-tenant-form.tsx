@@ -1,7 +1,9 @@
 "use client";
 
 import { useActionState } from "react";
+import { CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/atoms/button";
+import { Icon } from "@/components/atoms/icon";
 
 type FormState = { error?: string };
 
@@ -11,6 +13,7 @@ interface AdminSyncTenantFormProps {
 
 export function AdminSyncTenantForm({ action }: AdminSyncTenantFormProps) {
   const [state, formAction, pending] = useActionState(action, undefined);
+  const synced = state !== undefined && !state.error && !pending;
 
   return (
     <form action={formAction} className="flex flex-col items-start gap-sm">
@@ -19,8 +22,11 @@ export function AdminSyncTenantForm({ action }: AdminSyncTenantFormProps) {
       </Button>
       {state?.error ? (
         <p className="text-body-sm text-error">{state.error}</p>
-      ) : state ? (
-        <p className="text-body-sm text-on-surface-variant">Synced successfully.</p>
+      ) : synced ? (
+        <p className="inline-flex items-center gap-xs text-body-sm text-[#1e6b3a]">
+          <Icon icon={CheckCircle2} size="sm" aria-hidden />
+          Synced successfully.
+        </p>
       ) : null}
     </form>
   );

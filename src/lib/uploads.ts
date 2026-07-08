@@ -1,5 +1,5 @@
 import "server-only";
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
 import { siteUrl } from "@/lib/seo/site-config";
@@ -38,4 +38,14 @@ export async function saveUploadedImage(file: File, subdir: string): Promise<str
   await writeFile(path.join(dir, filename), Buffer.from(await file.arrayBuffer()));
 
   return `${siteUrl.replace(/\/$/, "")}/uploads/${subdir}/${filename}`;
+}
+
+// Best-effort removal of a logo saved by saveUploadedImage on this host.
+export async function deleteUploadedImageIfLocal(imageUrl: string): Promise<void> {
+  const base = siteUrl.replace(/\/$/, "");
+  if (!imageUrl.startsWith(`${base}/uploads/`)) return;
+
+  const relativePath = imageUrl.slice(base.length);
+  const filePath = path.join(process.cwd(), "public", relativePath);
+  await unlink(filePath).catch(() => {});
 }

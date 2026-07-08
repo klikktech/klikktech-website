@@ -1,15 +1,23 @@
 import { notFound } from "next/navigation";
 import { getTenant } from "@/core/logic/tenants";
+import { Breadcrumbs } from "@/components/molecules/breadcrumbs";
+import { AdminSectionCard } from "@/components/molecules/admin-section-card";
+import { AdminTenantHeader } from "@/components/organisms/admin-tenant-header";
 import { AdminTenantForm } from "@/components/organisms/admin-tenant-form";
 import { AdminFeatureOverridesEditor } from "@/components/organisms/admin-feature-overrides-editor";
+import { AdminEffectiveFeatures } from "@/components/organisms/admin-effective-features";
 import { AdminSyncTenantForm } from "@/components/organisms/admin-sync-tenant-form";
 import { AdminOnboardingLinkForm } from "@/components/organisms/admin-onboarding-link-form";
+import { AdminOnboardingSummary } from "@/components/organisms/admin-onboarding-summary";
+import { AdminDeleteTenantForm } from "@/components/organisms/admin-delete-tenant-form";
 import {
   updateTenantAction,
   updateFeatureOverridesAction,
   syncTenantAction,
   generateOnboardingLinkAction,
+  deleteTenantAction,
 } from "../actions";
+import { canDeprovisionTenantDatabase } from "@/core/logic/tenant-provisioning";
 import type { FeatureKey } from "@/core/logic/feature-keys";
 
 interface FeatureOverrides {
@@ -31,52 +39,102 @@ export default async function TenantDetailPage({ params }: { params: Promise<{ i
     initialOverrides[key as FeatureKey] = "disabled";
   });
 
+  const canDropDatabase = canDeprovisionTenantDatabase(tenant.slug, tenant.databaseUrl);
+  let databaseName: string | null = null;
+  try {
+    databaseName = decodeURIComponent(new URL(tenant.databaseUrl).pathname.replace(/^\//, ""));
+  } catch {
+    databaseName = null;
+  }
+
   return (
-    <div className="flex flex-col gap-xl">
-      <div>
-        <h1 className="text-headline-md text-on-surface mb-lg">{tenant.name}</h1>
-        <AdminTenantForm
-          action={updateTenantAction.bind(null, tenant.id)}
-          submitLabel="Save changes"
-          initial={{
-            name: tenant.name,
-            slug: tenant.slug,
-            status: tenant.status,
-            planId: tenant.planId,
-            databaseUrl: tenant.databaseUrl,
-            contactEmail: tenant.contactEmail ?? "",
-            notes: tenant.notes ?? "",
-          }}
-        />
+    <div>
+      <Breadcrumbs
+        items={[{ label: "Tenants", href: "/admin" }, { label: tenant.name }]}
+        className="mb-lg pt-0"
+      />
+
+      <AdminTenantHeader tenant={tenant} />
+
+      <div className="grid gap-lg lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
+        <div className="flex flex-col gap-lg">
+          <AdminSectionCard
+            title="Registry"
+            description="Internal tenant record — name is your ops label; the tenant sets their store name during onboarding."
+          >
+            <AdminTenantForm
+              action={updateTenantAction.bind(null, tenant.id)}
+              submitLabel="Save changes"
+              initial={{
+                name: tenant.name,
+                slug: tenant.slug,
+                status: tenant.status,
+                planId: tenant.planId,
+                databaseUrl: tenant.databaseUrl,
+                contactEmail: tenant.contactEmail ?? "",
+                notes: tenant.notes ?? "",
+              }}
+            />
+          </AdminSectionCard>
+
+          <AdminSectionCard
+            title="Feature overrides"
+            description="Override individual features on top of the tenant's plan. Save here, then sync to push changes."
+          >
+            <div className="mb-lg rounded-button border border-outline-variant bg-surface-container-low px-md py-sm">
+              <p className="text-label-md text-on-surface-variant mb-sm">Effective features</p>
+              <AdminEffectiveFeatures
+                planId={tenant.planId}
+                featureOverrides={tenant.featureOverrides}
+              />
+            </div>
+            <AdminFeatureOverridesEditor
+              action={updateFeatureOverridesAction.bind(null, tenant.id)}
+              initial={initialOverrides}
+            />
+          </AdminSectionCard>
+        </div>
+
+        <aside className="flex flex-col gap-lg lg:sticky lg:top-lg">
+          <AdminSectionCard
+            title="Sync to tenant"
+            description="Pushes plan and feature overrides into this tenant's database."
+          >
+            <AdminSyncTenantForm action={syncTenantAction.bind(null, tenant.id)} />
+          </AdminSectionCard>
+
+          <AdminSectionCard
+            title="Onboarding"
+            description="Generate a one-time link for the tenant to configure their store."
+          >
+            <AdminOnboardingLinkForm
+              action={generateOnboardingLinkAction.bind(null, tenant.id)}
+              completedAt={
+                tenant.onboardingCompletedAt ? tenant.onboardingCompletedAt.toLocaleString() : null
+              }
+            />
+          </AdminSectionCard>
+
+          {tenant.onboardingCompletedAt ? (
+            <AdminSectionCard title="Store configuration">
+              <AdminOnboardingSummary tenant={tenant} />
+            </AdminSectionCard>
+          ) : null}
+        </aside>
       </div>
 
-      <div>
-        <h2 className="text-body-lg font-semibold text-on-surface mb-md">Feature overrides</h2>
-        <AdminFeatureOverridesEditor
-          action={updateFeatureOverridesAction.bind(null, tenant.id)}
-          initial={initialOverrides}
+      <AdminSectionCard
+        title="Danger zone"
+        description="Permanently remove this tenant from the registry."
+        className="mt-lg border-error/40"
+      >
+        <AdminDeleteTenantForm
+          tenantName={tenant.name}
+          canDropDatabase={canDropDatabase}
+          databaseName={databaseName}
+          action={deleteTenantAction.bind(null, tenant.id)}
         />
-      </div>
-
-      <div>
-        <h2 className="text-body-lg font-semibold text-on-surface mb-md">Sync to tenant database</h2>
-        <p className="text-body-sm text-on-surface-variant mb-sm">
-          Pushes the plan and feature overrides above into this tenant&apos;s own database.
-        </p>
-        <AdminSyncTenantForm action={syncTenantAction.bind(null, tenant.id)} />
-      </div>
-
-      <div>
-        <h2 className="text-body-lg font-semibold text-on-surface mb-md">Onboarding</h2>
-        <p className="text-body-sm text-on-surface-variant mb-sm">
-          Generates a one-time link for the tenant to set up their store name, logo, theme, contact info,
-          currency, and brand colors themselves.
-        </p>
-        <AdminOnboardingLinkForm
-          action={generateOnboardingLinkAction.bind(null, tenant.id)}
-          completedAt={tenant.onboardingCompletedAt ? tenant.onboardingCompletedAt.toLocaleString() : null}
-        />
-      </div>
+      </AdminSectionCard>
     </div>
   );
 }

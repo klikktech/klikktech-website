@@ -138,11 +138,13 @@ Content lives in `src/lib/content/`. SEO metadata is in `src/lib/seo/` and appli
 
 ## Super admin portal (`/admin`)
 
-Internal control-plane for the retail-software multi-tenant SaaS (silo model: one Postgres database per tenant). This app is a **registry + remote control** — it does not provision tenant databases or deployments.
+Internal control-plane for the retail-software multi-tenant SaaS (silo model: one Postgres database per tenant). This app is a **registry + remote control** that also provisions new tenant databases locally.
 
 - **Auth:** Email/password login with hashed-token sessions (`admin_session` cookie)
-- **Tenants:** Create and edit tenant records (name, slug, status, plan, feature overrides, database URL)
+- **Provision:** `/admin/tenants/new` creates a Postgres DB, runs retail-software migrations, seeds first admin login (`TENANT_DB_ADMIN_URL`, `RETAIL_SOFTWARE_REPO_PATH`)
+- **Tenants:** Edit registry (name, slug, status, plan, feature overrides, database URL)
 - **Sync:** Push `planId` and `featureOverrides` to a tenant's `StoreSettings` table via direct Postgres connection
+- **Delete:** Danger zone on tenant detail — type tenant name to confirm; drops `retail_tenant_{slug}` DB when provisioned by this app, otherwise registry-only (manual DB cleanup)
 
 `FEATURE_KEYS` and `PLAN_IDS` in `src/core/logic/feature-keys.ts` are manually kept in sync with retail-software's `core/logic/features.ts`.
 

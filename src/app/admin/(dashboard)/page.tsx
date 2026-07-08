@@ -8,8 +8,13 @@ export default async function AdminDashboardPage() {
 
   return (
     <div>
-      <div className="mb-lg flex items-center justify-between">
-        <h1 className="text-headline-md text-on-surface">Tenants</h1>
+      <div className="mb-lg flex flex-wrap items-end justify-between gap-md">
+        <div>
+          <h1 className="text-headline-md text-on-surface">Tenants</h1>
+          <p className="mt-xs text-body-sm text-on-surface-variant">
+            Manage retail-software tenant registry and remote configuration.
+          </p>
+        </div>
         <Link href="/admin/tenants/new">
           <Button type="button">New tenant</Button>
         </Link>
