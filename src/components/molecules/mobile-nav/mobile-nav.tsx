@@ -5,10 +5,15 @@ import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { Icon } from "@/components/atoms/icon";
 import { NavLink } from "@/components/molecules/nav-link";
+import { AdminNavButton } from "@/components/molecules/admin-nav-button";
 import { mainNavLinks } from "@/lib/constants/navigation";
 import { cn } from "@/lib/utils/cn";
 
-export function MobileNav() {
+type MobileNavProps = {
+  isAdminAuthenticated: boolean;
+};
+
+export function MobileNav({ isAdminAuthenticated }: MobileNavProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
@@ -81,6 +86,13 @@ export function MobileNav() {
                   />
                 </li>
               ))}
+              <li>
+                <AdminNavButton
+                  isAuthenticated={isAdminAuthenticated}
+                  onNavigate={closeMenu}
+                  className="block w-full border-b-0 py-sm text-left text-body-md"
+                />
+              </li>
               <li className="pt-sm">
                 <Link
                   href="/contact"

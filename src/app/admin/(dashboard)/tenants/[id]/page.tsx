@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { getTenant } from "@/core/logic/tenants";
 import { Breadcrumbs } from "@/components/molecules/breadcrumbs";
 import { AdminSectionCard } from "@/components/molecules/admin-section-card";
+import { AdminSectionNav } from "@/components/molecules/admin-section-nav";
 import { AdminTenantHeader } from "@/components/organisms/admin-tenant-header";
 import { AdminTenantForm } from "@/components/organisms/admin-tenant-form";
 import { AdminFeatureOverridesEditor } from "@/components/organisms/admin-feature-overrides-editor";
@@ -47,6 +48,15 @@ export default async function TenantDetailPage({ params }: { params: Promise<{ i
     databaseName = null;
   }
 
+  const sectionNav = [
+    { id: "registry", label: "Registry" },
+    { id: "features", label: "Features" },
+    { id: "sync", label: "Sync" },
+    { id: "onboarding", label: "Onboarding" },
+    ...(tenant.onboardingCompletedAt ? [{ id: "store-config", label: "Store config" }] : []),
+    { id: "danger", label: "Danger zone" },
+  ];
+
   return (
     <div>
       <Breadcrumbs
@@ -55,10 +65,12 @@ export default async function TenantDetailPage({ params }: { params: Promise<{ i
       />
 
       <AdminTenantHeader tenant={tenant} />
+      <AdminSectionNav items={sectionNav} />
 
       <div className="grid gap-lg lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
         <div className="flex flex-col gap-lg">
           <AdminSectionCard
+            id="registry"
             title="Registry"
             description="Internal tenant record — name is your ops label; the tenant sets their store name during onboarding."
           >
@@ -78,6 +90,7 @@ export default async function TenantDetailPage({ params }: { params: Promise<{ i
           </AdminSectionCard>
 
           <AdminSectionCard
+            id="features"
             title="Feature overrides"
             description="Override individual features on top of the tenant's plan. Save here, then sync to push changes."
           >
@@ -95,8 +108,9 @@ export default async function TenantDetailPage({ params }: { params: Promise<{ i
           </AdminSectionCard>
         </div>
 
-        <aside className="flex flex-col gap-lg lg:sticky lg:top-lg">
+        <aside className="flex flex-col gap-lg lg:sticky lg:top-24">
           <AdminSectionCard
+            id="sync"
             title="Sync to tenant"
             description="Pushes plan and feature overrides into this tenant's database."
           >
@@ -104,6 +118,7 @@ export default async function TenantDetailPage({ params }: { params: Promise<{ i
           </AdminSectionCard>
 
           <AdminSectionCard
+            id="onboarding"
             title="Onboarding"
             description="Generate a one-time link for the tenant to configure their store."
           >
@@ -116,7 +131,7 @@ export default async function TenantDetailPage({ params }: { params: Promise<{ i
           </AdminSectionCard>
 
           {tenant.onboardingCompletedAt ? (
-            <AdminSectionCard title="Store configuration">
+            <AdminSectionCard id="store-config" title="Store configuration">
               <AdminOnboardingSummary tenant={tenant} />
             </AdminSectionCard>
           ) : null}
@@ -124,9 +139,11 @@ export default async function TenantDetailPage({ params }: { params: Promise<{ i
       </div>
 
       <AdminSectionCard
+        id="danger"
         title="Danger zone"
         description="Permanently remove this tenant from the registry."
-        className="mt-lg border-error/40"
+        variant="danger"
+        className="mt-lg"
       >
         <AdminDeleteTenantForm
           tenantName={tenant.name}

@@ -1,5 +1,6 @@
 import { Breadcrumbs } from "@/components/molecules/breadcrumbs";
 import { AdminSectionCard } from "@/components/molecules/admin-section-card";
+import { AdminPageHeader } from "@/components/molecules/admin-page-header";
 import { ProvisionTenantForm } from "@/components/organisms/provision-tenant-form";
 import { AdminTenantForm } from "@/components/organisms/admin-tenant-form";
 import { isAutoProvisioningConfigured } from "@/core/logic/tenant-provisioning";
@@ -14,7 +15,14 @@ export default function NewTenantPage() {
         items={[{ label: "Tenants", href: "/admin" }, { label: "New tenant" }]}
         className="mb-lg pt-0"
       />
-      <h1 className="text-headline-md text-on-surface mb-lg">New tenant</h1>
+      <AdminPageHeader
+        title="New tenant"
+        description={
+          autoProvisioning
+            ? "Provision a new tenant database with migrations and first admin login."
+            : "Register an already-provisioned tenant database."
+        }
+      />
       {autoProvisioning ? (
         <AdminSectionCard
           title="Provision tenant"

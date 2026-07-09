@@ -1,5 +1,5 @@
 import { Tag } from "@/components/atoms/tag";
-import { resolveFeatures, type FeatureKey } from "@/core/logic/feature-keys";
+import { FEATURE_LABELS, resolveFeatures, type FeatureKey } from "@/core/logic/feature-keys";
 
 type AdminEffectiveFeaturesProps = {
   planId: string;
@@ -17,7 +17,9 @@ export function AdminEffectiveFeatures({ planId, featureOverrides }: AdminEffect
   return (
     <div className="flex flex-wrap gap-sm">
       {sorted.map((key: FeatureKey) => (
-        <Tag key={key}>{key}</Tag>
+        <Tag key={key} title={key}>
+          {FEATURE_LABELS[key]}
+        </Tag>
       ))}
     </div>
   );

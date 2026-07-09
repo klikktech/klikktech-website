@@ -2,11 +2,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { NavLink } from "@/components/molecules/nav-link";
 import { MobileNav } from "@/components/molecules/mobile-nav";
+import { AdminNavButton } from "@/components/molecules/admin-nav-button";
 import { mainNavLinks, siteConfig } from "@/lib/constants/navigation";
+import { getCurrentAdmin } from "@/core/logic/admin-auth";
 import { cn } from "@/lib/utils/cn";
 import { MarketingContainer } from "@/components/templates/marketing-layout/marketing-container";
 
-export function SiteHeader() {
+export async function SiteHeader() {
+  const admin = await getCurrentAdmin();
+
   return (
     <header className="sticky top-0 z-50 border-b border-outline-variant bg-surface/95 backdrop-blur-sm">
       <MarketingContainer>
@@ -40,7 +44,11 @@ export function SiteHeader() {
           </nav>
 
           <div className="flex min-w-0 flex-1 items-center justify-end gap-sm sm:gap-md">
-            <MobileNav />
+            <AdminNavButton
+              isAuthenticated={Boolean(admin)}
+              className="hidden lg:inline-flex"
+            />
+            <MobileNav isAdminAuthenticated={Boolean(admin)} />
             <Link
               href="/contact"
               className={cn(

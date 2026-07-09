@@ -9,7 +9,8 @@ import { Textarea } from "@/components/atoms/textarea";
 import { Button } from "@/components/atoms/button";
 import { Icon } from "@/components/atoms/icon";
 import { FormField } from "@/components/molecules/form-field";
-import { PLAN_IDS } from "@/core/logic/feature-keys";
+import { AdminFormFeedback } from "@/components/molecules/admin-form-feedback";
+import { PLAN_IDS, PLAN_LABELS, type PlanId } from "@/core/logic/feature-keys";
 
 type FormState = { error?: string };
 
@@ -35,7 +36,7 @@ const STATUS_OPTIONS = [
   { label: "Suspended", value: "SUSPENDED" },
 ];
 
-const PLAN_OPTIONS = PLAN_IDS.map((id) => ({ label: id, value: id }));
+const PLAN_OPTIONS = PLAN_IDS.map((id) => ({ label: PLAN_LABELS[id], value: id }));
 
 export function AdminTenantForm({ action, initial, submitLabel = "Save" }: AdminTenantFormProps) {
   const [state, formAction, pending] = useActionState(action, undefined);
@@ -49,7 +50,13 @@ export function AdminTenantForm({ action, initial, submitLabel = "Save" }: Admin
           <Input id="name" name="name" required defaultValue={initial?.name} />
         </FormField>
         <FormField id="slug" label="Slug">
-          <Input id="slug" name="slug" required defaultValue={initial?.slug} />
+          <Input
+            id="slug"
+            name="slug"
+            required
+            defaultValue={initial?.slug}
+            className="font-mono"
+          />
         </FormField>
       </div>
       <div className="grid gap-md sm:grid-cols-2">
@@ -57,7 +64,12 @@ export function AdminTenantForm({ action, initial, submitLabel = "Save" }: Admin
           <Select id="status" name="status" options={STATUS_OPTIONS} defaultValue={initial?.status ?? "TRIAL"} />
         </FormField>
         <FormField id="planId" label="Plan">
-          <Select id="planId" name="planId" options={PLAN_OPTIONS} defaultValue={initial?.planId ?? "basic"} />
+          <Select
+            id="planId"
+            name="planId"
+            options={PLAN_OPTIONS}
+            defaultValue={(initial?.planId as PlanId) ?? "basic"}
+          />
         </FormField>
       </div>
       <FormField id="contactEmail" label="Contact email">
@@ -88,8 +100,8 @@ export function AdminTenantForm({ action, initial, submitLabel = "Save" }: Admin
           </Button>
         </div>
       </FormField>
-      {state?.error ? <p className="text-body-sm text-error">{state.error}</p> : null}
-      {saved ? <p className="text-body-sm text-[#1e6b3a]">Saved successfully.</p> : null}
+      {state?.error ? <AdminFormFeedback variant="error" message={state.error} /> : null}
+      {saved ? <AdminFormFeedback variant="success" message="Saved successfully." /> : null}
       <Button type="submit" disabled={pending} className="self-start">
         {pending ? "Saving…" : submitLabel}
       </Button>

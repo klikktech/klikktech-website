@@ -1,21 +1,44 @@
 import { cn } from "@/lib/utils/cn";
 
+type AdminSectionCardVariant = "default" | "danger";
+
 type AdminSectionCardProps = {
   title?: string;
   description?: string;
   children: React.ReactNode;
   className?: string;
+  id?: string;
+  variant?: AdminSectionCardVariant;
 };
 
-export function AdminSectionCard({ title, description, children, className }: AdminSectionCardProps) {
+export function AdminSectionCard({
+  title,
+  description,
+  children,
+  className,
+  id,
+  variant = "default",
+}: AdminSectionCardProps) {
   return (
     <section
+      id={id}
       className={cn(
-        "rounded-card border border-outline-variant bg-surface-container-lowest p-lg",
+        "scroll-mt-24 rounded-card border bg-surface-container-lowest p-lg",
+        variant === "default" && "border-outline-variant",
+        variant === "danger" && "border-error/40 bg-error-container/10",
         className,
       )}
     >
-      {title ? <h2 className="text-body-lg font-semibold text-on-surface">{title}</h2> : null}
+      {title ? (
+        <h2
+          className={cn(
+            "text-body-lg font-semibold",
+            variant === "danger" ? "text-error" : "text-on-surface",
+          )}
+        >
+          {title}
+        </h2>
+      ) : null}
       {description ? (
         <p className={cn("text-body-sm text-on-surface-variant", title ? "mt-xs" : undefined)}>
           {description}

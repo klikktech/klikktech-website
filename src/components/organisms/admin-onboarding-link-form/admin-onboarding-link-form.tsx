@@ -2,7 +2,9 @@
 
 import { useActionState } from "react";
 import { Button } from "@/components/atoms/button";
-import { CopyButton } from "@/components/molecules/copy-button";
+import { AdminFormFeedback } from "@/components/molecules/admin-form-feedback";
+import { AdminSecretReveal } from "@/components/molecules/admin-secret-reveal";
+import { Badge } from "@/components/atoms/badge";
 
 type FormState = { error?: string; link?: string };
 
@@ -16,29 +18,30 @@ export function AdminOnboardingLinkForm({ action, completedAt }: AdminOnboarding
 
   return (
     <div className="flex flex-col gap-md">
+      <div className="flex items-center gap-sm">
+        <span className="text-body-sm text-on-surface-variant">Status:</span>
+        <Badge variant={completedAt ? "success" : "default"}>
+          {completedAt ? "Complete" : "Pending"}
+        </Badge>
+      </div>
       {completedAt ? (
         <p className="text-body-sm text-on-surface-variant">Last onboarded on {completedAt}.</p>
       ) : (
-        <p className="text-body-sm text-on-surface-variant">Not onboarded yet.</p>
+        <p className="text-body-sm text-on-surface-variant">
+          Generate a link for the tenant to configure their store.
+        </p>
       )}
       <form action={formAction}>
         <Button type="submit" disabled={pending}>
           {pending ? "Generating…" : completedAt ? "Regenerate onboarding link" : "Generate onboarding link"}
         </Button>
       </form>
-      {state?.error ? <p className="text-body-sm text-error">{state.error}</p> : null}
+      {state?.error ? <AdminFormFeedback variant="error" message={state.error} /> : null}
       {state?.link ? (
-        <div className="rounded-button border border-outline-variant bg-surface-container-low px-md py-sm">
-          <p className="text-body-sm text-on-surface-variant mb-sm">
-            Share this link with the tenant — it won&apos;t be shown again after you leave this page.
-          </p>
-          <div className="flex flex-col gap-sm sm:flex-row sm:items-start">
-            <code className="min-w-0 flex-1 break-all font-mono text-body-sm text-on-surface">
-              {state.link}
-            </code>
-            <CopyButton value={state.link} label="Copy link" />
-          </div>
-        </div>
+        <AdminSecretReveal
+          description="Share this link with the tenant — it won't be shown again after you leave this page."
+          items={[{ label: "Onboarding link", value: state.link, copyLabel: "Copy link" }]}
+        />
       ) : null}
     </div>
   );
