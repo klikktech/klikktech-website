@@ -7,8 +7,9 @@ import { Select } from "@/components/atoms/select";
 import { Textarea } from "@/components/atoms/textarea";
 import { Button } from "@/components/atoms/button";
 import { FormField } from "@/components/molecules/form-field";
-import { CopyButton } from "@/components/molecules/copy-button";
-import { PLAN_IDS } from "@/core/logic/feature-keys";
+import { AdminFormFeedback } from "@/components/molecules/admin-form-feedback";
+import { AdminSecretReveal } from "@/components/molecules/admin-secret-reveal";
+import { PLAN_IDS, PLAN_LABELS } from "@/core/logic/feature-keys";
 
 type FormState = {
   error?: string;
@@ -19,7 +20,7 @@ interface ProvisionTenantFormProps {
   action: (state: FormState | undefined, formData: FormData) => Promise<FormState>;
 }
 
-const PLAN_OPTIONS = PLAN_IDS.map((id) => ({ label: id, value: id }));
+const PLAN_OPTIONS = PLAN_IDS.map((id) => ({ label: PLAN_LABELS[id], value: id }));
 
 export function ProvisionTenantForm({ action }: ProvisionTenantFormProps) {
   const [state, formAction, pending] = useActionState(action, undefined);
@@ -27,25 +28,17 @@ export function ProvisionTenantForm({ action }: ProvisionTenantFormProps) {
   if (state?.result) {
     return (
       <div className="flex flex-col gap-md">
-        <p className="text-body-sm text-[#1e6b3a]">
-          Tenant provisioned — database created and migrated.
-        </p>
-        <div className="rounded-button border border-outline-variant bg-surface-container-low px-md py-sm">
-          <p className="text-body-sm text-on-surface-variant mb-sm">
-            First admin login — shown once, won&apos;t be shown again after you leave this page.
-          </p>
-          <div className="flex flex-col gap-xs">
-            <div className="flex items-center gap-sm">
-              <span className="text-body-sm text-on-surface-variant">Email:</span>
-              <code className="font-mono text-body-sm text-on-surface">{state.result.adminEmail}</code>
-            </div>
-            <div className="flex items-center gap-sm">
-              <span className="text-body-sm text-on-surface-variant">Password:</span>
-              <code className="font-mono text-body-sm text-on-surface">{state.result.tempPassword}</code>
-              <CopyButton value={state.result.tempPassword} label="Copy password" />
-            </div>
-          </div>
-        </div>
+        <AdminFormFeedback
+          variant="success"
+          message="Tenant provisioned — database created and migrated."
+        />
+        <AdminSecretReveal
+          description="First admin login — shown once, won't be shown again after you leave this page."
+          items={[
+            { label: "Email", value: state.result.adminEmail, copyable: false },
+            { label: "Password", value: state.result.tempPassword, copyLabel: "Copy password" },
+          ]}
+        />
         <Link href={`/admin/tenants/${state.result.tenantId}`}>
           <Button type="button">Go to tenant &amp; generate onboarding link</Button>
         </Link>
@@ -60,7 +53,13 @@ export function ProvisionTenantForm({ action }: ProvisionTenantFormProps) {
           <Input id="name" name="name" required />
         </FormField>
         <FormField id="slug" label="Slug">
-          <Input id="slug" name="slug" required placeholder="lowercase-hyphenated" />
+          <Input
+            id="slug"
+            name="slug"
+            required
+            placeholder="lowercase-hyphenated"
+            className="font-mono"
+          />
         </FormField>
       </div>
       <div className="grid gap-md sm:grid-cols-2">
@@ -74,7 +73,7 @@ export function ProvisionTenantForm({ action }: ProvisionTenantFormProps) {
       <FormField id="notes" label="Notes">
         <Textarea id="notes" name="notes" rows={3} className="min-h-0" />
       </FormField>
-      {state?.error ? <p className="text-body-sm text-error">{state.error}</p> : null}
+      {state?.error ? <AdminFormFeedback variant="error" message={state.error} /> : null}
       <Button type="submit" disabled={pending} className="self-start">
         {pending ? "Provisioning…" : "Provision tenant"}
       </Button>

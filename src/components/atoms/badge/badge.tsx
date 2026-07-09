@@ -9,7 +9,7 @@ type BadgeProps = React.HTMLAttributes<HTMLSpanElement> & {
 const variantStyles: Record<BadgeVariant, string> = {
   default: "bg-surface-container-low text-on-surface-variant",
   accent: "bg-secondary-container text-on-secondary-container",
-  success: "bg-[#e6f4ea] text-[#1e6b3a]",
+  success: "bg-success-container text-on-success-container",
   info: "bg-tertiary-fixed text-on-tertiary-fixed",
   dark: "bg-primary-container text-inverse-on-surface",
 };

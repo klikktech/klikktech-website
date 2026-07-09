@@ -1,9 +1,10 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useId } from "react";
 import { Input } from "@/components/atoms/input";
 import { Button } from "@/components/atoms/button";
 import { FormField } from "@/components/molecules/form-field";
+import { AdminFormFeedback } from "@/components/molecules/admin-form-feedback";
 
 type LoginState = { error?: string };
 
@@ -13,20 +14,29 @@ interface AdminLoginFormProps {
 
 export function AdminLoginForm({ action }: AdminLoginFormProps) {
   const [state, formAction, pending] = useActionState(action, undefined);
+  const fieldId = useId();
 
   return (
     <form action={formAction} className="flex flex-col gap-md">
-      <FormField id="email" label="Email">
-        <Input id="email" name="email" type="email" required autoComplete="email" />
+      <FormField id={`${fieldId}-email`} label="Email">
+        <Input
+          id={`${fieldId}-email`}
+          name="email"
+          type="email"
+          required
+          autoComplete="email"
+        />
       </FormField>
-      <FormField id="password" label="Password">
-        <Input id="password" name="password" type="password" required autoComplete="current-password" />
+      <FormField id={`${fieldId}-password`} label="Password">
+        <Input
+          id={`${fieldId}-password`}
+          name="password"
+          type="password"
+          required
+          autoComplete="current-password"
+        />
       </FormField>
-      {state?.error ? (
-        <p className="rounded-button bg-error-container px-md py-sm text-body-sm text-on-error-container">
-          {state.error}
-        </p>
-      ) : null}
+      {state?.error ? <AdminFormFeedback variant="error" message={state.error} /> : null}
       <Button type="submit" disabled={pending} className="w-full">
         {pending ? "Signing in…" : "Sign in"}
       </Button>

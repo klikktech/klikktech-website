@@ -1,9 +1,8 @@
 "use client";
 
 import { useActionState } from "react";
-import { CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/atoms/button";
-import { Icon } from "@/components/atoms/icon";
+import { AdminFormFeedback } from "@/components/molecules/admin-form-feedback";
 
 type FormState = { error?: string };
 
@@ -20,13 +19,9 @@ export function AdminSyncTenantForm({ action }: AdminSyncTenantFormProps) {
       <Button type="submit" disabled={pending}>
         {pending ? "Syncing…" : "Sync to tenant DB"}
       </Button>
-      {state?.error ? (
-        <p className="text-body-sm text-error">{state.error}</p>
-      ) : synced ? (
-        <p className="inline-flex items-center gap-xs text-body-sm text-[#1e6b3a]">
-          <Icon icon={CheckCircle2} size="sm" aria-hidden />
-          Synced successfully.
-        </p>
+      {state?.error ? <AdminFormFeedback variant="error" message={state.error} /> : null}
+      {synced ? (
+        <AdminFormFeedback variant="success" message="Synced successfully to tenant database." />
       ) : null}
     </form>
   );

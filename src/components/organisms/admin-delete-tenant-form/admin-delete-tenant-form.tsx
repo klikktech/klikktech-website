@@ -2,9 +2,12 @@
 
 import { useState } from "react";
 import { useActionState } from "react";
+import { AlertTriangle } from "lucide-react";
 import { Input } from "@/components/atoms/input";
 import { Button } from "@/components/atoms/button";
+import { Icon } from "@/components/atoms/icon";
 import { FormField } from "@/components/molecules/form-field";
+import { AdminFormFeedback } from "@/components/molecules/admin-form-feedback";
 import { cn } from "@/lib/utils/cn";
 
 type FormState = { error?: string };
@@ -28,31 +31,34 @@ export function AdminDeleteTenantForm({
 
   return (
     <form action={formAction} className="flex flex-col gap-md">
-      <p className="text-body-sm text-on-surface-variant">
-        {canDropDatabase ? (
-          <>
-            This will permanently delete the tenant registry and drop the Postgres database
-            {databaseName ? (
-              <>
-                {" "}
-                <code className="font-mono text-on-surface">{databaseName}</code>
-              </>
-            ) : null}
-            . This cannot be undone.
-          </>
-        ) : (
-          <>
-            This tenant&apos;s database was not created by the provisioner
-            {databaseName ? (
-              <>
-                {" "}
-                (<code className="font-mono text-on-surface">{databaseName}</code>)
-              </>
-            ) : null}
-            . Only the registry record will be removed — you must delete the database manually.
-          </>
-        )}
-      </p>
+      <div className="flex items-start gap-sm rounded-button border border-error/20 bg-error-container/30 px-md py-sm">
+        <Icon icon={AlertTriangle} size="sm" className="mt-0.5 shrink-0 text-error" aria-hidden />
+        <p className="text-body-sm text-on-error-container">
+          {canDropDatabase ? (
+            <>
+              This will permanently delete the tenant registry and drop the Postgres database
+              {databaseName ? (
+                <>
+                  {" "}
+                  <code className="font-mono text-on-surface">{databaseName}</code>
+                </>
+              ) : null}
+              . This cannot be undone.
+            </>
+          ) : (
+            <>
+              This tenant&apos;s database was not created by the provisioner
+              {databaseName ? (
+                <>
+                  {" "}
+                  (<code className="font-mono text-on-surface">{databaseName}</code>)
+                </>
+              ) : null}
+              . Only the registry record will be removed — you must delete the database manually.
+            </>
+          )}
+        </p>
+      </div>
       <FormField id="confirmation" label={`Type "${tenantName}" to confirm`}>
         <Input
           id="confirmation"
@@ -63,7 +69,7 @@ export function AdminDeleteTenantForm({
           autoComplete="off"
         />
       </FormField>
-      {state?.error ? <p className="text-body-sm text-error">{state.error}</p> : null}
+      {state?.error ? <AdminFormFeedback variant="error" message={state.error} /> : null}
       <Button
         type="submit"
         disabled={pending || !isConfirmed}

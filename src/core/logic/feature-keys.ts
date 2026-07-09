@@ -4,8 +4,19 @@
 export const FEATURE_KEYS = ["pos", "theme_classic", "theme_minimal"] as const;
 export type FeatureKey = (typeof FEATURE_KEYS)[number];
 
+export const FEATURE_LABELS: Record<FeatureKey, string> = {
+  pos: "Point of Sale",
+  theme_classic: "Classic theme",
+  theme_minimal: "Minimal theme",
+};
+
 export const PLAN_IDS = ["basic", "premium"] as const;
 export type PlanId = (typeof PLAN_IDS)[number];
+
+export const PLAN_LABELS: Record<PlanId, string> = {
+  basic: "Basic",
+  premium: "Premium",
+};
 
 const BASE_FEATURES: Record<FeatureKey, boolean> = {
   pos: true,

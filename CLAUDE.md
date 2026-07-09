@@ -29,7 +29,7 @@ Next.js 16 App Router + React 19 + TypeScript (strict) + Tailwind CSS v4. Path a
 - `atoms/` — smallest presentational elements (button, input, badge, tag, icon…). Must not import from molecules/organisms/templates.
 - `molecules/` — groups of atoms, no business logic. May only import atoms.
 - `organisms/` — feature sections with business logic (hero-section, cta-banner, testimonials-section, payment-section…). May import atoms + molecules.
-- `templates/` — page-level layout shells (`marketing-layout`, `marketing-container`). May import atoms/molecules/organisms.
+- `templates/` — page-level layout shells (`marketing-layout`, `marketing-container`, `admin-layout`). May import atoms/molecules/organisms.
 - `src/app/**` — routes; may import from any layer.
 
 Each component lives in its own folder with a barrel `index.ts` re-exporting the component (e.g. `atoms/button/button.tsx` + `atoms/button/index.ts`).
@@ -147,6 +147,7 @@ The tenant's own store configuration (store name, logo, theme, contact info, cur
 │   │   ├── admin
 │   │   │   ├── actions.ts
 │   │   │   ├── (auth)
+│   │   │   │   ├── layout.tsx
 │   │   │   │   └── login
 │   │   │   │      ├── actions.ts
 │   │   │   │      └── page.tsx
@@ -209,6 +210,9 @@ The tenant's own store configuration (store name, logo, theme, contact info, cur
 │   │   │   ├── input
 │   │   │   │   ├── index.ts
 │   │   │   │   └── input.tsx
+│   │   │   ├── modal
+│   │   │   │   ├── index.ts
+│   │   │   │   └── modal.tsx
 │   │   │   ├── json-ld
 │   │   │   │   ├── index.ts
 │   │   │   │   └── json-ld.tsx
@@ -222,8 +226,26 @@ The tenant's own store configuration (store name, logo, theme, contact info, cur
 │   │   │       ├── index.ts
 │   │   │       └── textarea.tsx
 │   │   ├── molecules
+│   │   │   ├── admin-nav-button
+│   │   │   │   ├── admin-nav-button.tsx
+│   │   │   │   └── index.ts
+│   │   │   ├── admin-form-feedback
+│   │   │   │   ├── admin-form-feedback.tsx
+│   │   │   │   └── index.ts
+│   │   │   ├── admin-nav-link
+│   │   │   │   ├── admin-nav-link.tsx
+│   │   │   │   └── index.ts
+│   │   │   ├── admin-page-header
+│   │   │   │   ├── admin-page-header.tsx
+│   │   │   │   └── index.ts
+│   │   │   ├── admin-secret-reveal
+│   │   │   │   ├── admin-secret-reveal.tsx
+│   │   │   │   └── index.ts
 │   │   │   ├── admin-section-card
 │   │   │   │   ├── admin-section-card.tsx
+│   │   │   │   └── index.ts
+│   │   │   ├── admin-section-nav
+│   │   │   │   ├── admin-section-nav.tsx
 │   │   │   │   └── index.ts
 │   │   │   ├── breadcrumbs
 │   │   │   │   ├── breadcrumbs.tsx
@@ -286,11 +308,17 @@ The tenant's own store configuration (store name, logo, theme, contact info, cur
 │   │   │   ├── admin-delete-tenant-form
 │   │   │   │   ├── admin-delete-tenant-form.tsx
 │   │   │   │   └── index.ts
+│   │   │   ├── admin-dashboard-stats
+│   │   │   │   ├── admin-dashboard-stats.tsx
+│   │   │   │   └── index.ts
 │   │   │   ├── admin-effective-features
 │   │   │   │   ├── admin-effective-features.tsx
 │   │   │   │   └── index.ts
 │   │   │   ├── admin-feature-overrides-editor
 │   │   │   │   ├── admin-feature-overrides-editor.tsx
+│   │   │   │   └── index.ts
+│   │   │   ├── admin-login-modal
+│   │   │   │   ├── admin-login-modal.tsx
 │   │   │   │   └── index.ts
 │   │   │   ├── admin-login-form
 │   │   │   │   ├── admin-login-form.tsx
@@ -370,6 +398,12 @@ The tenant's own store configuration (store name, logo, theme, contact info, cur
 │   │   │       ├── index.ts
 │   │   │       └── testimonials-section.tsx
 │   │   └── templates
+│   │       ├── admin-layout
+│   │       │   ├── admin-layout.tsx
+│   │       │   ├── admin-mobile-nav.tsx
+│   │       │   ├── admin-sidebar.tsx
+│   │       │   ├── admin-topbar.tsx
+│   │       │   └── index.ts
 │   │       └── marketing-layout
 │   │           ├── index.ts
 │   │           ├── marketing-container.tsx
@@ -387,6 +421,7 @@ The tenant's own store configuration (store name, logo, theme, contact info, cur
 │   │   └── prisma           # Prisma-generated client (gitignored), custom output path
 │   └── lib
 │       ├── constants
+│       │   ├── admin-navigation.ts
 │       │   └── navigation.ts
 │       ├── content
 │       │   ├── contact.ts
