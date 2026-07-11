@@ -82,6 +82,7 @@ This repo also hosts the **control-plane app** for the separate `retail-software
 - **Automated local provisioning** (`src/core/logic/tenant-provisioning.ts::provisionTenantDatabase`, wired to `provisionTenantAction` behind `/admin/tenants/new`'s form): creates a fresh Postgres database on the same local server that hosts retail-software's sample tenant (`TENANT_DB_ADMIN_URL`, a separate database per tenant rather than a separate server — the local stand-in for a real per-tenant managed instance), shells out to retail-software's own `npx prisma migrate deploy` against it (`RETAIL_SOFTWARE_REPO_PATH` — assumes that repo is checked out as a sibling directory on this machine; a real pipeline would package migrations as a build artifact instead), then seeds just enough via raw `pg` inserts for the tenant to log in for the first time: the `StoreSettings` singleton row (placeholder `storeName`, real values come later from onboarding) and one `TENANT_ADMIN` `Staff` row with a random temp password. That password and the admin email are returned once in the action's response state (never persisted in plaintext, same one-time-reveal pattern as the onboarding link) before the control-plane `Tenant` record is created pointing at the new `databaseUrl`.
   - **Both env vars are local-only** — neither a Postgres admin connection nor a sibling repo checkout exists in a deployed environment (e.g. Vercel). `isAutoProvisioningConfigured()` checks both are set; `/admin/tenants/new` falls back to the original manual flow (`createTenantAction`, plain `AdminTenantForm` with a hand-typed `databaseUrl`) whenever they're not, rather than showing a form that would always fail with a provisioning error.
 - **Tenant deletion** (`deprovisionTenantDatabase` + `deleteTenantAction` on `/admin/tenants/[id]` danger zone): super admin must type the tenant's exact `name` to confirm. If `databaseUrl` matches the slug-derived `retail_tenant_*` name from provisioning (`canDeprovisionTenantDatabase`), terminates connections and `DROP DATABASE` via `TENANT_DB_ADMIN_URL`, then deletes the control-plane row and any local onboarding logo in `public/uploads`. Externally registered tenants (e.g. seed `retail_sample_tenant`) only get registry removal — the UI warns that the database must be deleted manually.
+- **Cloud provisioning (planned):** Vercel-first async tenant provisioning via Inngest is specified in `docs/vercel-first-provisioning-plan.md` (one Vercel project + Neon via Vercel Storage API per tenant; personal account OK without `VERCEL_TEAM_ID`).
 
 ### Tenant onboarding (`/onboarding/[token]`)
 
@@ -143,6 +144,8 @@ The tenant's own store configuration (store name, logo, theme, contact info, cur
 │   ├── vercel.svg
 │   └── window.svg
 ├── README.md
+├── docs
+│   └── vercel-first-provisioning-plan.md
 ├── src
 │   ├── app
 │   │   ├── admin
