@@ -10,15 +10,14 @@ export function HeroSection() {
     homeHeroContent;
 
   return (
-    <section className="relative overflow-hidden pt-xl pb-lg">
+    <section className="relative pt-xl pb-lg">
       <div
         aria-hidden
-        className="pointer-events-none absolute -right-24 -top-24 size-72 rounded-full bg-secondary-container/60 blur-3xl"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -bottom-16 left-1/4 size-56 rounded-full bg-tertiary-fixed/50 blur-3xl"
-      />
+        className="pointer-events-none absolute inset-y-0 left-1/2 w-screen -translate-x-1/2"
+      >
+        <div className="absolute -right-16 -top-16 size-96 rounded-full bg-secondary-container/60 blur-3xl" />
+        <div className="absolute -bottom-16 left-1/4 size-56 rounded-full bg-tertiary-fixed/50 blur-3xl" />
+      </div>
 
       <div className="relative mx-auto flex max-w-3xl flex-col items-center gap-lg text-center">
         <Badge variant="accent">{badge}</Badge>

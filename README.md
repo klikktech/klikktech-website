@@ -185,3 +185,5 @@ Internal control-plane for the retail-software multi-tenant SaaS (silo model: on
 ## Further reading
 
 See [`CLAUDE.md`](./CLAUDE.md) for detailed architecture notes, env var semantics, and provisioning behavior.
+
+**Planned:** Vercel-first async tenant provisioning (Inngest) — [`docs/vercel-first-provisioning-plan.md`](./docs/vercel-first-provisioning-plan.md).
