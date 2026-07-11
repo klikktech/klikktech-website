@@ -36,54 +36,54 @@ export type TestimonialItem = {
 
 export const homeHeroContent = {
   badge: "Digital Growth Partner",
-  title: "Custom Web Solutions That",
-  titleAccent: "Drive Real Growth.",
+  title: "Digital Tools That Help You",
+  titleAccent: "Win More Business.",
   description:
-    "Klikktek helps US businesses launch faster websites, earn more Google reviews, recover missed leads, and automate support with practical AI — without the agency runaround.",
+    "Klikktek helps US businesses get more calls and inquiries, collect more 5-star Google reviews, follow up on missed leads instantly, and answer customer questions around the clock — without the agency runaround.",
   primaryCta: { label: "Schedule a Call", href: "/#contact" },
   secondaryCta: { label: "See how it works", href: "/#how-it-works" },
 } as const;
 
 export const homeServicesContent = {
-  label: "Capabilities",
-  title: "What we build for your business",
+  label: "Solutions",
+  title: "How we help your business grow",
   description:
-    "Four focused offerings you can mix and match — each designed to generate leads, save time, and strengthen your online reputation.",
+    "Four focused services you can mix and match — each built to bring in more leads, save your team time, and strengthen your reputation online.",
   items: [
     {
       id: "web-applications",
-      title: "Custom Web Applications",
+      title: "Websites & Business Tools",
       description:
-        "Fast, mobile-ready sites and portals tailored to how your team sells, supports customers, and reports performance.",
+        "A professional site that loads fast, works on every phone, and turns visitors into calls and inquiries — built around how you actually sell.",
       icon: "web",
-      tags: ["Next.js", "Performance", "SEO-ready"],
+      tags: ["More leads", "Mobile-ready", "Google-friendly"],
       href: "/#contact",
     },
     {
       id: "google-reviews",
       title: "Google Reviews Program",
       description:
-        "Automated review requests, monitoring, and response workflows that improve trust and local search visibility.",
+        "More Google reviews, less chasing. We set up simple follow-ups so happy customers leave feedback and new buyers trust you faster.",
       icon: "reviews",
-      tags: ["Reputation", "Local SEO", "Automation"],
+      tags: ["Stronger reputation", "Local visibility", "Less manual work"],
       href: "/#contact",
     },
     {
       id: "lead-recovery",
-      title: "Lead Recovery Automation",
+      title: "Never Miss a Lead",
       description:
-        "Instant follow-up when calls are missed so prospects get a text back while interest is still high.",
+        "When you miss a call, we text the customer back immediately so you don't lose the job to a competitor while interest is still high.",
       icon: "seo",
-      tags: ["SMS", "Lead capture", "24/7"],
+      tags: ["Instant follow-up", "More booked jobs", "Works 24/7"],
       href: "/#contact",
     },
     {
       id: "ai-chatbot",
-      title: "AI Support Chatbots",
+      title: "24/7 Customer Answers",
       description:
-        "On-brand chat experiences that answer common questions, qualify leads, and hand off to your team when needed.",
+        "Answer common questions instantly, capture contact details, and loop in your team when it matters — so you're not stuck on the phone all day.",
       icon: "chatbot",
-      tags: ["AI", "CRM-ready", "Always on"],
+      tags: ["Fewer repeat questions", "Works with your tools", "Always on"],
       href: "/#contact",
     },
   ] satisfies HeroFeatureItem[],
@@ -97,98 +97,98 @@ export const homeHowItWorksContent = {
       id: "discovery",
       step: "01",
       duration: "20 mins",
-      title: "Kickoff Session",
+      title: "Free Strategy Call",
       description:
-        "We map your goals, audience, and existing tools in a structured working session — then outline a realistic delivery plan.",
+        "We learn how your business works, what you want to grow, and what success looks like — then give you a clear plan and timeline.",
     },
     {
       id: "build",
       step: "02",
       duration: "7–10 days",
-      title: "Design, Build & QA",
+      title: "We Build & Launch",
       description:
-        "We design, develop, and test your site and automations in focused sprints with review checkpoints before launch.",
+        "You see progress along the way. We handle design, setup, and testing so everything works smoothly before go-live.",
     },
     {
       id: "onboarding",
       step: "03",
       duration: "25 mins",
-      title: "Launch & Enablement",
+      title: "Go Live With Confidence",
       description:
-        "We go live together, train your team, and set up support so you are confident operating everything on day one.",
+        "We launch together, train your team, and set up ongoing support so you feel confident running everything from day one.",
     },
   ] satisfies ProcessStepItem[],
 } as const;
 
 export const homePortfolioContent = {
   label: "Portfolio",
-  title: "Selected Projects",
+  title: "Businesses We've Helped",
   items: [
     {
       id: "sigma-wholesale",
-      title: "Sigma Wholesale Platform",
+      title: "Sigma Wholesale",
       description:
-        "A full-stack wholesale platform built for Sigma, comprising a self-service customer portal for bulk ordering and account management, and an internal admin dashboard for inventory, pricing, and order fulfillment.",
+        "Sigma needed one system for bulk orders, customer accounts, and day-to-day operations — instead of spreadsheets and phone tag. We built an online ordering experience for their buyers and a back-office hub their team runs the business from.",
       href: "/#contact",
-      badge: "Web App",
+      badge: "Wholesale",
       image: "/images/sigma-wholesale/customer/customer-1.png",
       imageAlt: "Sigma Wholesale platform screenshot",
       images: [
         {
           src: "/images/sigma-wholesale/customer/customer-1.png",
-          alt: "Sigma Wholesale — customer portal home screen",
+          alt: "Sigma Wholesale — customer ordering home screen",
         },
         {
           src: "/images/sigma-wholesale/customer/customer-2.png",
-          alt: "Sigma Wholesale — customer portal product catalogue",
+          alt: "Sigma Wholesale — product catalogue",
         },
         {
           src: "/images/sigma-wholesale/customer/customer-3.png",
-          alt: "Sigma Wholesale — customer portal product detail",
+          alt: "Sigma Wholesale — product detail page",
         },
         {
           src: "/images/sigma-wholesale/customer/customer-4.png",
-          alt: "Sigma Wholesale — customer portal cart and checkout",
+          alt: "Sigma Wholesale — cart and checkout",
         },
         {
           src: "/images/sigma-wholesale/customer/customer-5.png",
-          alt: "Sigma Wholesale — customer portal order history",
+          alt: "Sigma Wholesale — order history",
         },
         {
           src: "/images/sigma-wholesale/customer/customer-6.png",
-          alt: "Sigma Wholesale — customer portal account settings",
+          alt: "Sigma Wholesale — account settings",
         },
         {
           src: "/images/sigma-wholesale/customer/customer-7.png",
-          alt: "Sigma Wholesale — customer portal invoice view",
+          alt: "Sigma Wholesale — invoice view",
         },
         {
           src: "/images/sigma-wholesale/admin/admin-2.png",
-          alt: "Sigma Wholesale — admin portal inventory management",
+          alt: "Sigma Wholesale — inventory management",
         },
         {
           src: "/images/sigma-wholesale/admin/admin-3.png",
-          alt: "Sigma Wholesale — admin portal customer accounts",
+          alt: "Sigma Wholesale — customer accounts",
         },
         {
           src: "/images/sigma-wholesale/admin/admin-4.png",
-          alt: "Sigma Wholesale — admin portal order queue",
+          alt: "Sigma Wholesale — order queue",
         },
         {
           src: "/images/sigma-wholesale/admin/admin-5.png",
-          alt: "Sigma Wholesale — admin portal pricing rules",
+          alt: "Sigma Wholesale — pricing management",
         },
         {
           src: "/images/sigma-wholesale/admin/admin-6.png",
-          alt: "Sigma Wholesale — admin portal reports and analytics",
+          alt: "Sigma Wholesale — reports and analytics",
         },
       ],
     },
     {
       id: "school-portal",
-      title: "EduTrack — School Management Portal",
+      title: "EduTrack — School Management",
       description:
-        "A unified platform for schools to manage student records, attendance, grading, and parent communication. Currently in active development.",
+        "Helping schools manage students, attendance, grades, and parent updates in one place — currently in active development.",
       href: "/#contact",
       badge: "Coming Soon",
       image: "",
@@ -202,19 +202,19 @@ export const homeTestimonialsContent = {
   label: "Reviews",
   title: "What Our Clients Say",
   description:
-    "Real feedback from businesses that partnered with Klikktek to grow their online presence.",
+    "Real feedback from business owners and managers who partnered with Klikktek to simplify operations and grow revenue.",
   items: [
     {
       id: "alex-sohani",
       quote:
-        "We came to Klikktek with a fragmented operation — spreadsheets everywhere, no central system. They built us a platform that finally brought everything together. The customer portal alone changed how our buyers interact with us daily.",
+        "We came to Klikktek with a fragmented operation — spreadsheets everywhere, no central system. They built us a platform that finally brought everything together. Our buyers can place orders online now, and that alone changed how we do business every day.",
       name: "Alex Sohani",
       role: "Owner, Sigma Wholesale",
     },
     {
       id: "ankit-sohani",
       quote:
-        "What impressed me most was how quickly they understood our wholesale model. The admin dashboard gave us real visibility into inventory and orders for the first time. It's become the backbone of how we run the business.",
+        "What impressed me most was how quickly they understood our wholesale model. For the first time we had real visibility into inventory and orders. It's become the backbone of how we run the business.",
       name: "Ankit Sohani",
       role: "Owner, Sigma Wholesale",
     },

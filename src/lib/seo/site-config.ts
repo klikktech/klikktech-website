@@ -9,7 +9,7 @@ export const siteSeoConfig = {
   legalName: "Klikktek",
   tagline: siteConfig.tagline,
   description:
-    "Custom web applications, AI chatbots, and strategic SEO for growing US businesses. Build fast, rank higher, and convert more leads.",
+    "Websites, Google review programs, lead follow-up, and 24/7 customer support for growing US businesses. More leads, stronger reputation, less manual work.",
   locale: "en_US",
   language: "en",
   country: "US",
@@ -25,9 +25,10 @@ export const siteSeoConfig = {
   defaultOgImage: "/images/og-default.jpg",
   twitterHandle: "@klikktek",
   services: [
-    "Custom Web Application Development",
-    "AI Chatbot Development",
-    "Technical SEO",
+    "Websites & Business Tools",
+    "Google Reviews Program",
+    "Lead Recovery",
+    "24/7 Customer Support",
     "Local SEO",
     "Website Maintenance",
   ],
