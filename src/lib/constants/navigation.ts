@@ -21,7 +21,7 @@ export const siteConfig = {
     width: 1024,
     height: 175,
   },
-  tagline: "Custom web solutions that drive real growth.",
+  tagline: "Practical digital tools that help your business grow.",
   copyright: "© 2026 Klikktek. Practical Digital Solutions for Growing Businesses.",
   contactEmail: "intelligence@klikktek.com",
 } as const;
@@ -37,10 +37,10 @@ export const footerColumns: FooterColumn[] = [
   {
     title: "Solutions",
     links: [
-      { label: "Web Applications", href: "/#services" },
+      { label: "Websites & Tools", href: "/#services" },
       { label: "Google Reviews", href: "/#services" },
       { label: "Lead Recovery", href: "/#services" },
-      { label: "AI Chatbots", href: "/#services" },
+      { label: "Customer Chat", href: "/#services" },
     ],
   },
   {
@@ -56,9 +56,9 @@ export const footerColumns: FooterColumn[] = [
 
 export const footerCtaContent = {
   eyebrow: "Get started",
-  title: "Ready to talk through your project?",
+  title: "Ready to grow your business online?",
   description:
-    "Pick a time on the calendar and we'll map out the fastest path to launch.",
+    "Book a free call and we'll walk through what's working today, where you're losing leads, and the fastest path forward.",
   buttonLabel: "Schedule a Call",
   buttonHref: "/#contact",
 } as const;

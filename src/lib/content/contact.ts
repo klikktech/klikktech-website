@@ -1,6 +1,6 @@
 export const bookCallContent = {
-  title: "Book a discovery call",
+  title: "Book a free strategy call",
   description:
-    "Pick a time that works for you, share your email and phone number, and we'll confirm your session by email.",
+    "Tell us about your business and pick a time that works. We'll confirm by email and come prepared with practical next steps.",
   submitLabel: "Confirm Booking",
 } as const;
