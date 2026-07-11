@@ -36,9 +36,6 @@ export const siteSeoConfig = {
 
 export const publicRoutes = [
   { path: "/", changeFrequency: "weekly" as const, priority: 1 },
-  { path: "/services", changeFrequency: "monthly" as const, priority: 0.9 },
-  { path: "/projects", changeFrequency: "weekly" as const, priority: 0.85 },
-  { path: "/contact", changeFrequency: "monthly" as const, priority: 0.8 },
 ] as const;
 
 export function absoluteUrl(path: string): string {

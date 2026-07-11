@@ -5,5 +5,5 @@ import { destroyCurrentSession } from "@/core/logic/admin-auth";
 
 export async function adminLogoutAction() {
   await destroyCurrentSession();
-  redirect("/");
+  redirect("/admin/login");
 }

@@ -1,19 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { Icon } from "@/components/atoms/icon";
+import { HeaderScheduleLink } from "@/components/molecules/header-schedule-link";
 import { NavLink } from "@/components/molecules/nav-link";
-import { AdminNavButton } from "@/components/molecules/admin-nav-button";
+import { ThemeToggle } from "@/components/molecules/theme-toggle";
 import { mainNavLinks } from "@/lib/constants/navigation";
 import { cn } from "@/lib/utils/cn";
 
-type MobileNavProps = {
-  isAdminAuthenticated: boolean;
-};
-
-export function MobileNav({ isAdminAuthenticated }: MobileNavProps) {
+export function MobileNav() {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
@@ -44,7 +40,8 @@ export function MobileNav({ isAdminAuthenticated }: MobileNavProps) {
   };
 
   return (
-    <div className="lg:hidden">
+    <div className="flex items-center gap-sm lg:hidden">
+      <ThemeToggle className="sm:hidden" />
       <button
         type="button"
         aria-expanded={isOpen}
@@ -73,7 +70,7 @@ export function MobileNav({ isAdminAuthenticated }: MobileNavProps) {
           <nav
             id="mobile-navigation-panel"
             aria-label="Mobile navigation"
-            className="fixed left-0 right-0 top-16 z-50 border-b border-outline-variant bg-surface-container-lowest p-lg shadow-overlay"
+            className="fixed left-0 right-0 top-16 z-50 max-h-[calc(100dvh-4rem)] overflow-y-auto border-b border-outline-variant bg-surface-container-lowest p-lg shadow-overlay"
           >
             <ul className="flex flex-col gap-md">
               {mainNavLinks.map((link) => (
@@ -86,25 +83,11 @@ export function MobileNav({ isAdminAuthenticated }: MobileNavProps) {
                   />
                 </li>
               ))}
-              <li>
-                <AdminNavButton
-                  isAuthenticated={isAdminAuthenticated}
-                  onNavigate={closeMenu}
-                  className="block w-full border-b-0 py-sm text-left text-body-md"
-                />
-              </li>
               <li className="pt-sm">
-                <Link
-                  href="/contact"
-                  onClick={closeMenu}
-                  className={cn(
-                    "inline-flex w-full items-center justify-center rounded-button bg-primary px-lg py-sm",
-                    "text-button text-on-primary transition-colors duration-150 hover:bg-on-surface",
-                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-on-tertiary-container focus-visible:ring-offset-2",
-                  )}
-                >
-                  Get Started
-                </Link>
+                <HeaderScheduleLink
+                  onNavigate={closeMenu}
+                  className="inline-flex w-full sm:hidden"
+                />
               </li>
             </ul>
           </nav>

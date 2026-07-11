@@ -1,12 +1,18 @@
-export type ServicePreviewItem = {
+export type HeroFeatureItem = {
   id: string;
   title: string;
   description: string;
-  href: string;
-  variant?: "default" | "dark";
+  icon: "web" | "reviews" | "chatbot" | "seo";
   tags?: string[];
-  ctaLabel?: string;
-  icon: "web" | "chatbot" | "seo" | "support";
+  href: string;
+};
+
+export type ProcessStepItem = {
+  id: string;
+  step: string;
+  duration: string;
+  title: string;
+  description: string;
 };
 
 export type ProjectPreviewItem = {
@@ -29,65 +35,89 @@ export type TestimonialItem = {
 };
 
 export const homeHeroContent = {
-  badge: "Custom Web Development",
-  title: "Functional Web Solutions &",
-  titleAccent: "Strategic SEO.",
+  badge: "Digital Growth Partner",
+  title: "Custom Web Solutions That",
+  titleAccent: "Drive Real Growth.",
   description:
-    "We build fast, reliable web applications and data-driven SEO strategies that help growing businesses rank higher, convert better, and scale with confidence.",
-  primaryCta: { label: "Start Your Project", href: "/contact" },
-  secondaryCta: { label: "View Our Work", href: "/#projects" },
-  image: {
-    src: "/images/hero-dashboard.svg",
-    alt: "Dashboard showing performance analytics on a laptop screen",
-  },
-  overlayCard: {
-    label: "Page Speed",
-    title: "Optimized for Fast",
-  },
+    "Klikktek helps US businesses launch faster websites, earn more Google reviews, recover missed leads, and automate support with practical AI — without the agency runaround.",
+  primaryCta: { label: "Schedule a Call", href: "/#contact" },
+  secondaryCta: { label: "See how it works", href: "/#how-it-works" },
 } as const;
 
 export const homeServicesContent = {
-  label: "Our Services",
-  title: "Build. Rank. Automate.",
+  label: "Capabilities",
+  title: "What we build for your business",
   description:
-    "From custom web apps to intelligent chatbots and SEO campaigns, we deliver practical digital solutions engineered for performance and measurable growth.",
+    "Four focused offerings you can mix and match — each designed to generate leads, save time, and strengthen your online reputation.",
   items: [
     {
       id: "web-applications",
-      title: "Web Applications",
+      title: "Custom Web Applications",
       description:
-        "Custom-built applications designed for speed, usability, and long-term scalability across devices and teams.",
-      href: "/services",
-      tags: ["Fast Performance", "User-Centric", "Scalable"],
+        "Fast, mobile-ready sites and portals tailored to how your team sells, supports customers, and reports performance.",
       icon: "web",
+      tags: ["Next.js", "Performance", "SEO-ready"],
+      href: "/#contact",
     },
     {
-      id: "custom-chatbots",
-      title: "Custom Chatbots",
+      id: "google-reviews",
+      title: "Google Reviews Program",
       description:
-        "AI-powered support automation that qualifies leads, resolves common requests, and integrates with your existing tools.",
-      href: "/services",
-      variant: "dark",
-      ctaLabel: "Learn More",
-      icon: "chatbot",
+        "Automated review requests, monitoring, and response workflows that improve trust and local search visibility.",
+      icon: "reviews",
+      tags: ["Reputation", "Local SEO", "Automation"],
+      href: "/#contact",
     },
     {
-      id: "seo-growth",
-      title: "SEO & Growth",
+      id: "lead-recovery",
+      title: "Lead Recovery Automation",
       description:
-        "Technical SEO, content strategy, and ongoing optimization to improve visibility and drive qualified organic traffic.",
-      href: "/services",
+        "Instant follow-up when calls are missed so prospects get a text back while interest is still high.",
       icon: "seo",
+      tags: ["SMS", "Lead capture", "24/7"],
+      href: "/#contact",
     },
     {
-      id: "ongoing-support",
-      title: "Ongoing Support",
+      id: "ai-chatbot",
+      title: "AI Support Chatbots",
       description:
-        "Reliable maintenance, performance monitoring, and iterative improvements to keep your digital products running smoothly.",
-      href: "/services",
-      icon: "support",
+        "On-brand chat experiences that answer common questions, qualify leads, and hand off to your team when needed.",
+      icon: "chatbot",
+      tags: ["AI", "CRM-ready", "Always on"],
+      href: "/#contact",
     },
-  ] satisfies ServicePreviewItem[],
+  ] satisfies HeroFeatureItem[],
+} as const;
+
+export const homeHowItWorksContent = {
+  label: "Our Process",
+  title: "A clear path from first call to launch.",
+  steps: [
+    {
+      id: "discovery",
+      step: "01",
+      duration: "20 mins",
+      title: "Kickoff Session",
+      description:
+        "We map your goals, audience, and existing tools in a structured working session — then outline a realistic delivery plan.",
+    },
+    {
+      id: "build",
+      step: "02",
+      duration: "7–10 days",
+      title: "Design, Build & QA",
+      description:
+        "We design, develop, and test your site and automations in focused sprints with review checkpoints before launch.",
+    },
+    {
+      id: "onboarding",
+      step: "03",
+      duration: "25 mins",
+      title: "Launch & Enablement",
+      description:
+        "We go live together, train your team, and set up support so you are confident operating everything on day one.",
+    },
+  ] satisfies ProcessStepItem[],
 } as const;
 
 export const homePortfolioContent = {
@@ -99,7 +129,7 @@ export const homePortfolioContent = {
       title: "Sigma Wholesale Platform",
       description:
         "A full-stack wholesale platform built for Sigma, comprising a self-service customer portal for bulk ordering and account management, and an internal admin dashboard for inventory, pricing, and order fulfillment.",
-      href: "/projects",
+      href: "/#contact",
       badge: "Web App",
       image: "/images/sigma-wholesale/customer/customer-1.png",
       imageAlt: "Sigma Wholesale platform screenshot",
@@ -133,10 +163,6 @@ export const homePortfolioContent = {
           alt: "Sigma Wholesale — customer portal invoice view",
         },
         {
-          src: "/images/sigma-wholesale/admin/admin-1.png",
-          alt: "Sigma Wholesale — admin portal overview dashboard",
-        },
-        {
           src: "/images/sigma-wholesale/admin/admin-2.png",
           alt: "Sigma Wholesale — admin portal inventory management",
         },
@@ -163,7 +189,7 @@ export const homePortfolioContent = {
       title: "EduTrack — School Management Portal",
       description:
         "A unified platform for schools to manage student records, attendance, grading, and parent communication. Currently in active development.",
-      href: "/contact",
+      href: "/#contact",
       badge: "Coming Soon",
       image: "",
       imageAlt: "",
@@ -173,9 +199,10 @@ export const homePortfolioContent = {
 } as const;
 
 export const homeTestimonialsContent = {
-  title: "Success Stories",
+  label: "Reviews",
+  title: "What Our Clients Say",
   description:
-    "Hear directly from the people who worked with Klikktek to bring Sigma Wholesale to life.",
+    "Real feedback from businesses that partnered with Klikktek to grow their online presence.",
   items: [
     {
       id: "alex-sohani",
@@ -199,12 +226,4 @@ export const homeTestimonialsContent = {
       role: "Manager, Sigma Wholesale",
     },
   ] satisfies TestimonialItem[],
-} as const;
-
-export const homeCtaContent = {
-  title: "Ready to grow your online presence?",
-  description:
-    "Contact us today to discuss your next web project or SEO strategy.",
-  placeholder: "Enter your email",
-  buttonLabel: "Get in Touch",
 } as const;

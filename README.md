@@ -1,37 +1,68 @@
 # Klikktek Website
 
-Marketing site and internal control-plane for [Klikktek](https://klikktek.com) — a Next.js app that serves the public website (services, portfolio, contact, payments) and a super-admin portal for managing multi-tenant SaaS customers on the separate [retail-software](https://github.com/klikktek/retail-software) platform.
+Marketing site and internal control-plane for [Klikktek](https://klikktek.com). The public experience is a **single scrolling homepage** with anchored sections; the private side hosts a super-admin portal for managing multi-tenant SaaS customers on the separate [retail-software](https://github.com/klikktek/retail-software) platform.
+
+## What you get
+
+### Public marketing site (`/`)
+
+One page, six sections — all navigation uses hash anchors:
+
+| Anchor | Section |
+| ------ | ------- |
+| `/#services` | Capabilities / service offering cards |
+| `/#how-it-works` | Process timeline |
+| `/#projects` | Portfolio carousel |
+| `/#reviews` | Client testimonials |
+| `/#contact` | Book-a-call calendar + contact form |
+
+Legacy routes redirect to the matching anchor:
+
+| Route | Redirect |
+| ----- | -------- |
+| `/services` | `/#services` |
+| `/projects` | `/#projects` |
+| `/contact` | `/#contact` |
+
+**Book a call flow:** visitors pick a weekday slot (Pacific time), submit name/email/phone, and both the team and visitor receive confirmation emails via Resend (`POST /api/book-call`).
+
+### Internal tools
+
+| Route | Description |
+| ----- | ----------- |
+| `/admin` | Super-admin dashboard — tenant registry, feature sync, onboarding links |
+| `/kt-invoice` | PDF invoice generator (bearer-token protected; internal/unlisted) |
+| `/onboarding/[token]` | One-time tenant store setup form (magic link) |
 
 ## Tech stack
 
-- **Framework:** Next.js 16 (App Router), React 19, TypeScript (strict)
-- **Styling:** Tailwind CSS v4 with a Material Design 3–inspired token system in `src/app/globals.css`
-- **Database:** PostgreSQL + Prisma 7 (driver adapter, client generated to `src/generated/prisma`)
-- **Payments:** Stripe (PaymentIntents + webhooks)
-- **Email:** Resend
-- **PDF:** `@react-pdf/renderer` (invoice generator)
+| Layer | Choice |
+| ----- | ------ |
+| Framework | Next.js 16 (App Router), React 19, TypeScript (strict) |
+| Styling | Tailwind CSS v4 + MD3-inspired design tokens in `src/app/globals.css` |
+| Database | PostgreSQL + Prisma 7 (driver adapter → `src/generated/prisma`) |
+| Email | Resend (book-a-call confirmations) |
+| PDF | `@react-pdf/renderer` (invoice generator) |
+| Storage | Vercel Blob (tenant onboarding logos) |
 
-
+Components follow [Atomic Design](https://atomicdesign.bradfrost.com/) with strict import rules between layers — see `.cursor/rules/code-organization.mdc`.
 
 ## Getting started
-
-
 
 ### Prerequisites
 
 - Node.js 20+
-- PostgreSQL (local or hosted)
-- Stripe and Resend accounts (for payment and email features)
+- PostgreSQL (local or hosted) — required for `/admin`
+- Resend account — optional for marketing; required for live booking emails
 
-
-
-### Install
+### Install & run
 
 ```bash
 npm install
+npm run dev
 ```
 
-
+Open [http://localhost:3000](http://localhost:3000). Admin portal: [http://localhost:3000/admin/login](http://localhost:3000/admin/login) (not linked from the public site).
 
 ### Environment variables
 
@@ -45,20 +76,25 @@ DATABASE_URL="postgresql://user:password@localhost:5432/klikktek_control"
 SEED_ADMIN_EMAIL="admin@example.com"
 SEED_ADMIN_PASSWORD="your-secure-password"
 
-# Stripe
-STRIPE_SECRET_KEY="sk_test_..."
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY="pk_test_..."
-STRIPE_WEBHOOK_SECRET="whsec_..."
-
-# Resend (contact forms + payment emails)
+# Resend (book-a-call emails)
 RESEND_API_KEY="re_..."
+
+# Canonical site URL (sitemap, OG, upload base)
+NEXT_PUBLIC_SITE_URL="http://localhost:3000"
+
+# Vercel Blob (tenant onboarding logo uploads)
+BLOB_READ_WRITE_TOKEN="vercel_blob_..."
 
 # Internal invoice tool (/kt-invoice)
 INVOICE_SECRET="..."
 NEXT_PUBLIC_INVOICE_SECRET="..."
+
+# Optional — local tenant auto-provisioning only
+TENANT_DB_ADMIN_URL="postgresql://user:password@localhost:5432/postgres"
+RETAIL_SOFTWARE_REPO_PATH="/path/to/retail-software"
 ```
 
-Marketing pages work without Stripe/Resend configured. The admin portal requires `DATABASE_URL` and the seed credentials.
+Marketing pages work without Resend configured (booking API will fail gracefully). The admin portal requires `DATABASE_URL` and seed credentials.
 
 ### Database setup
 
@@ -67,120 +103,85 @@ npx prisma migrate dev    # apply migrations
 npm run db:seed           # create super admin user + sample tenant row
 ```
 
-
-
-### Run locally
-
-```bash
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000). Admin portal: [http://localhost:3000/admin/login](http://localhost:3000/admin/login).
-
 ## Scripts
 
-
-| Command                                | Description                      |
-| -------------------------------------- | -------------------------------- |
-| `npm run dev`                          | Start development server         |
-| `npm run build`                        | Production build                 |
-| `npm run start`                        | Serve production build           |
-| `npm run lint`                         | Run ESLint                       |
-| `npm run db:seed`                      | Seed super admin + sample tenant |
-| `npx tsc --noEmit`                     | Type-check (strict mode)         |
-| `npx prisma migrate dev --name <name>` | Create and apply a migration     |
-| `npx prisma studio`                    | Open Prisma Studio               |
-
+| Command | Description |
+| ------- | ----------- |
+| `npm run dev` | Start development server |
+| `npm run build` | Production build |
+| `npm run start` | Serve production build |
+| `npm run lint` | Run ESLint |
+| `npm run db:seed` | Seed super admin + sample tenant |
+| `npx tsc --noEmit` | Type-check (strict mode) |
+| `npx prisma migrate dev --name <name>` | Create and apply a migration |
+| `npx prisma studio` | Open Prisma Studio |
 
 There is no test suite configured in this repo.
 
-## What's in the app
+## API routes
 
-
-
-### Public marketing site
-
-
-| Route       | Description                                 |
-| ----------- | ------------------------------------------- |
-| `/`         | Home                                        |
-| `/services` | Services overview                           |
-| `/projects` | Portfolio / case studies                    |
-| `/contact`  | Inquiry form, social proof, Stripe payments |
-
-
-Content lives in `src/lib/content/`. SEO metadata is in `src/lib/seo/` and applied per route via `createPageMetadata()`.
-
-### Internal tools
-
-
-| Route         | Description                                                                |
-| ------------- | -------------------------------------------------------------------------- |
-| `/kt-invoice` | PDF invoice generator (bearer-token protected; treat as internal/unlisted) |
-| `/admin`      | Super-admin dashboard — tenant registry and feature sync                   |
-
-
-
-
-### API routes
-
-
-| Endpoint                          | Purpose                                                        |
-| --------------------------------- | -------------------------------------------------------------- |
-| `POST /api/inquiry`               | Contact form — team notification + visitor confirmation emails |
-| `POST /api/cta-contact`           | CTA banner form submissions                                    |
-| `POST /api/create-payment-intent` | Stripe PaymentIntent creation                                  |
-| `POST /api/webhook`               | Stripe webhook — payment confirmation emails                   |
-| `POST /api/generate-invoice`      | PDF invoice generation (requires `INVOICE_SECRET`)             |
-
-
-
-
-## Super admin portal (`/admin`)
-
-Internal control-plane for the retail-software multi-tenant SaaS (silo model: one Postgres database per tenant). This app is a **registry + remote control** that also provisions new tenant databases locally.
-
-- **Auth:** Email/password login with hashed-token sessions (`admin_session` cookie)
-- **Provision:** `/admin/tenants/new` creates a Postgres DB, runs retail-software migrations, seeds first admin login (`TENANT_DB_ADMIN_URL`, `RETAIL_SOFTWARE_REPO_PATH`)
-- **Tenants:** Edit registry (name, slug, status, plan, feature overrides, database URL)
-- **Sync:** Push `planId` and `featureOverrides` to a tenant's `StoreSettings` table via direct Postgres connection
-- **Delete:** Danger zone on tenant detail — type tenant name to confirm; drops `retail_tenant_{slug}` DB when provisioned by this app, otherwise registry-only (manual DB cleanup)
-
-`FEATURE_KEYS` and `PLAN_IDS` in `src/core/logic/feature-keys.ts` are manually kept in sync with retail-software's `core/logic/features.ts`.
+| Endpoint | Purpose |
+| -------- | ------- |
+| `POST /api/book-call` | Discovery-call booking — team + visitor confirmation emails |
+| `POST /api/generate-invoice` | PDF invoice generation (requires `INVOICE_SECRET`) |
 
 ## Project structure
 
 ```
 src/
-├── app/                  # Next.js routes (marketing, admin, API)
+├── app/                    # Next.js routes (marketing, admin, API, onboarding)
 ├── components/
-│   ├── atoms/            # Buttons, inputs, badges…
-│   ├── molecules/        # Composed UI (form fields, cards…)
-│   ├── organisms/        # Feature sections (hero, payment, admin forms…)
-│   └── templates/        # Page layouts (marketing-layout)
-├── core/logic/           # Admin auth, tenants, tenant sync, feature keys
-├── generated/prisma/     # Prisma client (generated, gitignored)
+│   ├── atoms/              # Buttons, inputs, badges, icons…
+│   ├── molecules/          # Composed UI (nav links, form fields, cards…)
+│   ├── organisms/          # Feature sections (hero, book-call, admin forms…)
+│   └── templates/          # Page layouts (marketing-layout, admin-layout)
+├── core/logic/             # Admin auth, tenants, tenant sync, provisioning
+├── generated/prisma/       # Prisma client (generated, gitignored)
 └── lib/
-    ├── content/          # Static page copy
-    ├── seo/              # Metadata, schema.org JSON-LD
-    ├── pdf/              # Invoice document template
-    └── utils/            # Shared utilities (cn)
+    ├── booking/            # Calendar slot availability
+    ├── content/            # Static page copy (home.ts, contact.ts)
+    ├── constants/          # Nav links, site config
+    ├── seo/                # Metadata, schema.org JSON-LD
+    ├── pdf/                # Invoice document template
+    └── utils/              # cn(), scroll-to-hash
 ```
 
-Components follow [Atomic Design](https://atomicdesign.bradfrost.com/) with strict import rules between layers. See `.cursor/rules/code-organization.mdc`.
+## Content & SEO
+
+- **Copy:** `src/lib/content/home.ts` (homepage sections), `src/lib/content/contact.ts` (book-a-call form labels)
+- **SEO:** `src/lib/seo/page-seo.ts` + `createPageMetadata()` in each route
+- **Schema:** JSON-LD via `<JsonLd />` (`src/components/atoms/json-ld`)
+- **Sitemap:** `publicRoutes` in `src/lib/seo/site-config.ts` (currently just `/`)
+
+To add a new public route: add copy → add SEO entry → export `metadata` → register in `publicRoutes`.
 
 ## Design system
 
-Design tokens (colors, spacing, typography, radii) are defined as CSS custom properties in `src/app/globals.css` and exposed to Tailwind via `@theme inline`. Prefer project utilities like `text-headline-md`, `rounded-card`, `px-md`, and `shadow-overlay` over ad-hoc Tailwind values.
+Design tokens (colors, spacing, typography, radii) live as CSS custom properties in `src/app/globals.css` and are exposed to Tailwind via `@theme inline`.
 
-**Note:** Custom `--spacing-`* tokens (e.g. `--spacing-sm: 8px`) are for padding and gaps. Layout max-widths (`max-w-sm`, `max-w-lg`, etc.) use separate `--max-width-*` tokens to avoid Tailwind v4 resolving them to spacing pixel values.
+**Palette:** black primary, Klikktek blue accents (`#7073ff`, `#d0e1fb`).
 
-Fonts: Geist (display), Inter (body), JetBrains Mono (labels).
+**Fonts:** Lora (display/headlines), Inter (body), JetBrains Mono (labels).
 
-## Adding a new public route
+**Theme:** light/dark toggle via `ThemeToggle` (`src/components/molecules/theme-toggle`); preference stored in `localStorage` (`klikktek-theme`) with system-preference fallback. Dark tokens live under `.dark` on `<html>` in `globals.css`; an inline init script in `layout.tsx` applies the class before paint.
 
-1. Add page copy in `src/lib/content/`
-2. Add SEO entry in `src/lib/seo/page-seo.ts`
-3. Export `metadata` via `createPageMetadata()`
-4. Add the route to `publicRoutes` in `src/lib/seo/site-config.ts` (for sitemap)
+Prefer project utilities (`text-headline-md`, `rounded-card`, `px-md`, `shadow-overlay`) over ad-hoc Tailwind values.
 
+> **Note:** Custom `--spacing-*` tokens are for padding/gaps. Layout max-widths use separate `--max-width-*` tokens so Tailwind v4 does not resolve them as spacing pixel values.
+
+## Super admin portal (`/admin`)
+
+Internal control-plane for the retail-software multi-tenant SaaS (silo model: one Postgres database per tenant).
+
+- **Auth:** Email/password login with hashed-token sessions (`admin_session` cookie)
+- **Provision:** `/admin/tenants/new` creates a Postgres DB, runs retail-software migrations, seeds first admin login (when `TENANT_DB_ADMIN_URL` + `RETAIL_SOFTWARE_REPO_PATH` are set)
+- **Tenants:** Edit registry (name, slug, status, plan, feature overrides, database URL)
+- **Sync:** Push `planId` and `featureOverrides` to a tenant's `StoreSettings` table
+- **Onboarding:** Generate one-time magic links for tenant store setup
+- **Delete:** Danger zone — type tenant name to confirm; drops `retail_tenant_{slug}` DB when auto-provisioned
+
+`FEATURE_KEYS` and `PLAN_IDS` in `src/core/logic/feature-keys.ts` are manually kept in sync with retail-software's `core/logic/features.ts`.
+
+## Further reading
+
+See [`CLAUDE.md`](./CLAUDE.md) for detailed architecture notes, env var semantics, and provisioning behavior.

@@ -2,63 +2,51 @@ import Image from "next/image";
 import Link from "next/link";
 import { NavLink } from "@/components/molecules/nav-link";
 import { MobileNav } from "@/components/molecules/mobile-nav";
-import { AdminNavButton } from "@/components/molecules/admin-nav-button";
+import { ThemeToggle } from "@/components/molecules/theme-toggle";
 import { mainNavLinks, siteConfig } from "@/lib/constants/navigation";
-import { getCurrentAdmin } from "@/core/logic/admin-auth";
 import { cn } from "@/lib/utils/cn";
 import { MarketingContainer } from "@/components/templates/marketing-layout/marketing-container";
+import { HeaderScheduleLink } from "@/components/molecules/header-schedule-link";
 
-export async function SiteHeader() {
-  const admin = await getCurrentAdmin();
-
+export function SiteHeader() {
   return (
-    <header className="sticky top-0 z-50 border-b border-outline-variant bg-surface/95 backdrop-blur-sm">
+    <header className="sticky top-0 z-50 border-b border-outline-variant/80 bg-surface/90 shadow-[0_1px_0_0_rgba(25,28,30,0.04)] backdrop-blur-md dark:shadow-[0_1px_0_0_rgba(0,0,0,0.3)]">
       <MarketingContainer>
-        <div className="flex h-16 items-center gap-md">
-          <div className="flex min-w-0 flex-1 items-center">
-            <Link
-              href="/"
-              className={cn(
-                "inline-flex shrink-0 items-center",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-on-tertiary-container focus-visible:ring-offset-2",
-              )}
-            >
-              <Image
-                src={siteConfig.logo.src}
-                alt={siteConfig.logo.alt}
-                width={siteConfig.logo.width}
-                height={siteConfig.logo.height}
-                className="h-8 w-auto"
-                priority
-              />
-            </Link>
-          </div>
+        <div className="flex h-[var(--header-height)] items-center gap-md">
+          <Link
+            href="/"
+            className={cn(
+              "inline-flex shrink-0 items-center rounded-button",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-on-tertiary-container focus-visible:ring-offset-2",
+            )}
+          >
+            <Image
+              src={siteConfig.logo.src}
+              alt={siteConfig.logo.alt}
+              width={siteConfig.logo.width}
+              height={siteConfig.logo.height}
+              className="h-8 w-auto"
+              priority
+            />
+          </Link>
 
           <nav
             aria-label="Main navigation"
-            className="hidden shrink-0 items-center gap-lg lg:flex"
+            className="ml-auto hidden items-center gap-xl lg:flex"
           >
             {mainNavLinks.map((link) => (
               <NavLink key={link.href} href={link.href} label={link.label} />
             ))}
           </nav>
 
-          <div className="flex min-w-0 flex-1 items-center justify-end gap-sm sm:gap-md">
-            <AdminNavButton
-              isAuthenticated={Boolean(admin)}
-              className="hidden lg:inline-flex"
+          <div className="ml-auto flex items-center gap-sm lg:ml-0">
+            <ThemeToggle className="hidden sm:inline-flex" />
+            <div
+              aria-hidden
+              className="hidden h-6 w-px bg-outline-variant lg:block"
             />
-            <MobileNav isAdminAuthenticated={Boolean(admin)} />
-            <Link
-              href="/contact"
-              className={cn(
-                "hidden rounded-button bg-primary px-md py-sm text-button text-on-primary sm:inline-flex sm:px-lg",
-                "transition-colors duration-150 ease-in-out hover:bg-on-surface",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-on-tertiary-container focus-visible:ring-offset-2",
-              )}
-            >
-              Get Started
-            </Link>
+            <HeaderScheduleLink className="hidden lg:inline-flex" />
+            <MobileNav />
           </div>
         </div>
       </MarketingContainer>

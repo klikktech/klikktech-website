@@ -1,5 +1,1 @@
-export {
-  MarketingContainer,
-  MarketingLayout,
-  MarketingSection,
-} from "./marketing-layout";
+export { MarketingContainer, MarketingLayout } from "./marketing-layout";
