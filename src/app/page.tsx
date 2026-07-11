@@ -1,8 +1,10 @@
+import { HashScrollHandler } from "@/components/molecules/hash-scroll-handler";
 import { JsonLd } from "@/components/atoms/json-ld";
-import { CtaBanner } from "@/components/organisms/cta-banner";
+import { BookCallSection } from "@/components/organisms/book-call-section";
 import { HeroSection } from "@/components/organisms/hero-section";
+import { HowItWorksSection } from "@/components/organisms/how-it-works-section";
 import { PortfolioFeatured } from "@/components/organisms/portfolio-featured";
-import { ServicesPreview } from "@/components/organisms/services-preview";
+import { ServicesSection } from "@/components/organisms/services-section";
 import { TestimonialsSection } from "@/components/organisms/testimonials-section";
 import {
   MarketingContainer,
@@ -15,7 +17,6 @@ import {
   faqSchema,
   webPageSchema,
 } from "@/lib/seo/schema";
-
 export const metadata = createPageMetadata({
   title: homePageSeo.title,
   description: homePageSeo.description,
@@ -40,13 +41,15 @@ const homeSchema = combineSchemas(
 export default function HomePage() {
   return (
     <MarketingLayout>
+      <HashScrollHandler />
       <JsonLd data={homeSchema} />
       <MarketingContainer>
         <HeroSection />
-        <ServicesPreview />
+        <ServicesSection />
+        <HowItWorksSection />
         <PortfolioFeatured />
         <TestimonialsSection />
-        <CtaBanner />
+        <BookCallSection />
       </MarketingContainer>
     </MarketingLayout>
   );

@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import { Geist, Inter, JetBrains_Mono } from "next/font/google";
+import { Inter, JetBrains_Mono, Lora } from "next/font/google";
 import { JsonLd } from "@/components/atoms/json-ld";
 import { siteSeoConfig, siteUrl } from "@/lib/seo/site-config";
+import { themeInitScript } from "@/lib/theme/theme";
 import {
   combineSchemas,
   localBusinessSchema,
@@ -10,8 +11,8 @@ import {
 } from "@/lib/seo/schema";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const lora = Lora({
+  variable: "--font-lora",
   subsets: ["latin"],
   display: "swap",
 });
@@ -75,8 +76,12 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${inter.variable} ${jetbrainsMono.variable} h-full scroll-smooth antialiased`}
+      suppressHydrationWarning
+      className={`${lora.variable} ${inter.variable} ${jetbrainsMono.variable} h-full scroll-smooth antialiased`}
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body className="min-h-full flex flex-col font-body">
         <JsonLd data={globalSchema} />
         {children}

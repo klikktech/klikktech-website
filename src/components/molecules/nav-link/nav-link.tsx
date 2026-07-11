@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { scrollToHash } from "@/lib/utils/scroll-to-hash";
 import { cn } from "@/lib/utils/cn";
 
 type NavLinkProps = {
@@ -18,13 +19,26 @@ export function NavLink({
   onNavigate,
 }: NavLinkProps) {
   const pathname = usePathname();
+  const isHashLink = href.startsWith("/#");
   const isActive =
-    pathname === href || (href !== "/" && pathname.startsWith(`${href}/`));
+    !isHashLink &&
+    (pathname === href || (href !== "/" && pathname.startsWith(`${href}/`)));
+
+  const handleClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    onNavigate?.();
+
+    if (!isHashLink || pathname !== "/") {
+      return;
+    }
+
+    event.preventDefault();
+    scrollToHash(href);
+  };
 
   return (
     <Link
       href={href}
-      onClick={onNavigate}
+      onClick={handleClick}
       className={cn(
         "border-b border-transparent pb-xs text-body-sm text-on-surface-variant",
         "transition-colors duration-150 hover:text-on-surface",

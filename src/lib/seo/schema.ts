@@ -101,44 +101,6 @@ export function webPageSchema({
   };
 }
 
-export function breadcrumbSchema(
-  items: { name: string; path?: string }[],
-): JsonLd {
-  return {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: items.map((item, index) => ({
-      "@type": "ListItem",
-      position: index + 1,
-      name: item.name,
-      ...(item.path ? { item: absoluteUrl(item.path) } : {}),
-    })),
-  };
-}
-
-export function serviceSchema({
-  name,
-  description,
-  path = "/services",
-}: {
-  name: string;
-  description: string;
-  path?: string;
-}): JsonLd {
-  return {
-    "@context": "https://schema.org",
-    "@type": "Service",
-    name,
-    description,
-    provider: { "@id": `${absoluteUrl("/")}#organization` },
-    areaServed: {
-      "@type": "Country",
-      name: siteSeoConfig.areaServed,
-    },
-    url: absoluteUrl(path),
-  };
-}
-
 export function faqSchema(
   items: { question: string; answer: string }[],
 ): JsonLd {
@@ -153,47 +115,6 @@ export function faqSchema(
         text: item.answer,
       },
     })),
-  };
-}
-
-export function creativeWorkSchema({
-  name,
-  description,
-  path,
-  image,
-  keywords,
-  datePublished,
-}: {
-  name: string;
-  description: string;
-  path: string;
-  image: string;
-  keywords?: string[];
-  datePublished?: string;
-}): JsonLd {
-  return {
-    "@context": "https://schema.org",
-    "@type": "CreativeWork",
-    name,
-    description,
-    url: absoluteUrl(path),
-    image: absoluteUrl(image),
-    creator: { "@id": `${absoluteUrl("/")}#organization` },
-    keywords: keywords?.join(", "),
-    ...(datePublished ? { datePublished } : {}),
-  };
-}
-
-export function contactPageSchema(): JsonLd {
-  return {
-    "@context": "https://schema.org",
-    "@type": "ContactPage",
-    "@id": `${absoluteUrl("/contact")}#contactpage`,
-    url: absoluteUrl("/contact"),
-    name: "Contact Klikktek",
-    description:
-      "Get in touch with Klikktek to discuss custom web development, chatbots, or SEO services.",
-    isPartOf: { "@id": `${absoluteUrl("/")}#website` },
   };
 }
 

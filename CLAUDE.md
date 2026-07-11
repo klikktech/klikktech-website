@@ -28,7 +28,7 @@ Next.js 16 App Router + React 19 + TypeScript (strict) + Tailwind CSS v4. Path a
 
 - `atoms/` — smallest presentational elements (button, input, badge, tag, icon…). Must not import from molecules/organisms/templates.
 - `molecules/` — groups of atoms, no business logic. May only import atoms.
-- `organisms/` — feature sections with business logic (hero-section, cta-banner, testimonials-section, payment-section…). May import atoms + molecules.
+- `organisms/` — feature sections with business logic (hero-section, services-section, book-call-section, admin forms…). May import atoms + molecules.
 - `templates/` — page-level layout shells (`marketing-layout`, `marketing-container`, `admin-layout`). May import atoms/molecules/organisms.
 - `src/app/**` — routes; may import from any layer.
 
@@ -38,33 +38,43 @@ Styling is done via Tailwind utility classes composed with `cn()` (`src/lib/util
 
 ### Design tokens
 
-`src/app/globals.css` defines the entire design system as CSS custom properties (Material-Design-3-style surface/primary/secondary/tertiary tokens) under `:root`, then maps them into Tailwind v4 via `@theme inline`. Custom typography utilities (`text-display`, `text-headline-lg`, `text-body-md`, `text-label-md`, etc.) and layout utilities (`rounded-card`, `shadow-overlay`, `max-w-container`) are declared with `@utility` — prefer these over ad-hoc Tailwind font/spacing utilities so type scale and radii stay consistent. Fonts: Geist (display), Inter (body), JetBrains Mono (label), wired up as CSS variables in `src/app/layout.tsx`.
+`src/app/globals.css` defines the entire design system as CSS custom properties (Material-Design-3-style surface/primary/secondary/tertiary tokens) under `:root`, then maps them into Tailwind v4 via `@theme inline`. Custom typography utilities (`text-display`, `text-headline-lg`, `text-body-md`, `text-label-md`, etc.) and layout utilities (`rounded-card`, `shadow-overlay`, `max-w-container`) are declared with `@utility` — prefer these over ad-hoc Tailwind font/spacing utilities so type scale and radii stay consistent. Primary palette is black with blue accents (`on-tertiary-container` / `#7073ff`, `secondary-container` / `#d0e1fb`). Fonts: Lora (display/headlines), Inter (body), JetBrains Mono (label), wired up as CSS variables in `src/app/layout.tsx`.
+
+### Marketing site (single-page)
+
+The public marketing site is a **single scrolling homepage** (`/`). All main content lives in section anchors:
+
+- `/#services` — capabilities / service offering cards
+- `/#how-it-works` — process timeline
+- `/#projects` — portfolio carousel
+- `/#reviews` — client testimonials
+- `/#contact` — book-a-call calendar + contact form
+
+`mainNavLinks` in `lib/constants/navigation.ts` uses hash anchors. Legacy routes `/services`, `/projects`, and `/contact` are thin client redirect pages that `window.location.replace()` to the matching homepage anchor. `publicRoutes` in `site-config.ts` lists only `/` for the sitemap.
 
 ### Content/SEO separation
 
-- `src/lib/content/*.ts` — static page copy (home, services, projects, contact) kept out of components.
+- `src/lib/content/*.ts` — static page copy (`home.ts`, `contact.ts`) kept out of components.
 - `src/lib/seo/site-config.ts` — canonical site config (`siteSeoConfig`), `siteUrl`, `absoluteUrl()`, and the site's public route list used for the sitemap.
-- `src/lib/seo/page-seo.ts` — per-route title/description/keyword definitions.
+- `src/lib/seo/page-seo.ts` — homepage title/description/keyword definitions + FAQ copy.
 - `src/lib/seo/metadata.ts` — `createPageMetadata()` builds a Next `Metadata` object (canonical, OG, Twitter, robots) from a page-seo entry; use it in every route's exported `metadata`.
-- `src/lib/seo/schema.ts` — schema.org JSON-LD builders (organization, localBusiness, website, webPage, breadcrumb, service, FAQ, creativeWork, contactPage) plus `combineSchemas()` to merge them into a `@graph`; rendered via `<JsonLd data={...} />` (`components/atoms/json-ld`).
+- `src/lib/seo/schema.ts` — schema.org JSON-LD builders (organization, localBusiness, website, webPage, FAQ) plus `combineSchemas()` to merge them into a `@graph`; rendered via `<JsonLd data={...} />` (`components/atoms/json-ld`).
 
-When adding a new route, follow the existing pattern: define its copy in `lib/content`, its SEO metadata in `lib/seo/page-seo.ts`, call `createPageMetadata` for the exported `metadata`, and add the route to `publicRoutes` in `site-config.ts` so it appears in `src/app/sitemap.ts`.
+When adding a new public route, follow the existing pattern: define its copy in `lib/content`, its SEO metadata in `lib/seo/page-seo.ts`, call `createPageMetadata` for the exported `metadata`, and add the route to `publicRoutes` in `site-config.ts` so it appears in `src/app/sitemap.ts`.
 
 ### API routes (`src/app/api/*/route.ts`)
 
-- `create-payment-intent` — creates a Stripe PaymentIntent (`force-dynamic`); Stripe client is lazily instantiated and memoized module-level (`getStripe()`).
-- `webhook` — Stripe webhook handler, verifies `stripe-signature` against `STRIPE_WEBHOOK_SECRET`, and on `payment_intent.succeeded` sends confirmation/notification emails via Resend.
+- `book-call` — discovery-call booking (name, email, phone, selected slot); sends team notification + visitor confirmation via Resend.
 - `generate-invoice` — protected by a static bearer token (`INVOICE_SECRET`); renders a PDF with `@react-pdf/renderer` from `src/lib/pdf/invoice-document.tsx` and streams it back as `application/pdf`. The client caller is `src/app/kt-invoice/page.tsx`, which sends `Authorization: Bearer ${NEXT_PUBLIC_INVOICE_SECRET}` — this is a client-exposed secret, so treat `kt-invoice` as an internal/unlisted tool, not a public-facing page.
-- `inquiry` / `cta-contact` — form submission endpoints that send paired emails through Resend (team notification + visitor confirmation), inline HTML templates, from `contact@klikktek.com`. They intentionally don't fail the whole request if only the visitor-confirmation send fails (logged, not thrown).
 
-Required env vars (see `.env.local`, not committed): `STRIPE_SECRET_KEY`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`, `STRIPE_WEBHOOK_SECRET`, `RESEND_API_KEY`, `INVOICE_SECRET`, `NEXT_PUBLIC_INVOICE_SECRET`, `DATABASE_URL`, `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD`, `BLOB_READ_WRITE_TOKEN` (Vercel Blob, image uploads), `NEXT_PUBLIC_SITE_URL` (canonical/upload URL base — defaults to `https://klikktek.com` if unset). `TENANT_DB_ADMIN_URL`/`RETAIL_SOFTWARE_REPO_PATH` are optional and local-dev-only (see "Automated local provisioning" below).
+Required env vars (see `.env.local`, not committed): `RESEND_API_KEY`, `INVOICE_SECRET`, `NEXT_PUBLIC_INVOICE_SECRET`, `DATABASE_URL`, `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD`, `BLOB_READ_WRITE_TOKEN` (Vercel Blob, image uploads), `NEXT_PUBLIC_SITE_URL` (canonical/upload URL base — defaults to `https://klikktek.com` if unset). `TENANT_DB_ADMIN_URL`/`RETAIL_SOFTWARE_REPO_PATH` are optional and local-dev-only (see "Automated local provisioning" below).
 
 ### Super admin portal (`/admin`)
 
 This repo also hosts the **control-plane app** for the separate `retail-software` multi-tenant SaaS project (a silo-model billing platform: one Postgres DB per tenant, no shared `tenant_id` columns). Under that silo model a tenant's feature entitlements live in *that tenant's own* database, not here — so this portal is a **registry + remote control** that also provisions new tenant databases locally (see below); a real deployment would swap the local-provisioning step for a cloud provider's API (Neon/RDS) plus a Vercel project per tenant, per retail-software's own plan.
 
 - **Own Postgres + Prisma** (v7, driver-adapter, generator output `src/generated/prisma`, imported as `@/generated/prisma/client`) — entirely separate from any tenant's database. `prisma.config.ts` loads env from `.env.local` (this project's convention) rather than Prisma's `.env` default.
-- **Auth**: `AdminUser`/`AdminSession` (`src/core/logic/admin-auth.ts`) — single internal-ops login, hashed-token session in an `admin_session` cookie, mirrors retail-software's own `Staff`/`StaffSession` pattern. Route-gating uses a Next.js route-group split: `src/app/admin/(auth)/login/` is unguarded, `src/app/admin/(dashboard)/layout.tsx` calls `requireAdmin()` — a single `layout.tsx` directly at `src/app/admin/` would also wrap `/admin/login` and redirect-loop.
+- **Auth:** `AdminUser`/`AdminSession` (`src/core/logic/admin-auth.ts`) — single internal-ops login at `/admin/login` (dedicated page, not linked from the public navbar), hashed-token session in an `admin_session` cookie, mirrors retail-software's own `Staff`/`StaffSession` pattern. Unauthenticated `/admin` requests redirect to `/admin/login`. Route-gating uses a Next.js route-group split: `src/app/admin/(auth)/login/` is unguarded, `src/app/admin/(dashboard)/layout.tsx` calls `requireAdmin()` — a single `layout.tsx` directly at `src/app/admin/` would also wrap `/admin/login` and redirect-loop.
 - **Tenant registry** (`src/core/logic/tenants.ts`): `Tenant` rows hold `name`, `slug`, `status`, `planId`, `featureOverrides` (Json `{enabled?: string[], disabled?: string[]}`), and `databaseUrl` (plaintext in this pass — no secrets vault yet, acceptable for one internal tenant, revisit before onboarding real customers).
 - `src/core/logic/feature-keys.ts` — `FEATURE_KEYS`/`PLAN_IDS` are a **manually-synced copy** of retail-software's `core/logic/features.ts`; there's no shared package between the two repos, so keep this list in sync by hand whenever a feature key changes on that side.
 - **The sync mechanism** (`src/core/logic/tenant-sync.ts::syncFeaturesToTenant`) is the part that actually closes the loop: it opens a direct `pg.Client` connection using the tenant's stored `databaseUrl` and runs a parameterized `UPDATE "StoreSettings" SET "planId" = $1, "featureOverrides" = $2 WHERE id = 1` — the exact table/columns retail-software's `core/logic/features.ts::resolveFeatures()` reads. Triggered by a "Sync to tenant DB" button on `/admin/tenants/[id]`, surfaced as a plain success/error message rather than throwing.
@@ -86,7 +96,7 @@ The tenant's own store configuration (store name, logo, theme, contact info, cur
 
 ## Project-specific conventions (from Cursor rules)
 
-- Favor React Server Components; minimize `'use client'`, `useEffect`, and `useState` — reach for them only where interactivity genuinely requires it (forms, the invoice generator, payment flow).
+- Favor React Server Components; minimize `'use client'`, `useEffect`, and `useState` — reach for them only where interactivity genuinely requires it (forms, the invoice generator, booking calendar).
 - Directory names are lowercase-with-dashes.
 - Use early returns / guard clauses for error conditions in API routes (already the pattern in every route handler — follow it for new ones).
 
@@ -97,7 +107,6 @@ The tenant's own store configuration (store name, logo, theme, contact info, cur
 ├── eslint.config.mjs
 ├── next-env.d.ts
 ├── next.config.ts
-├── package-lock.json
 ├── package.json
 ├── postcss.config.mjs
 ├── prisma.config.ts
@@ -105,342 +114,280 @@ The tenant's own store configuration (store name, logo, theme, contact info, cur
 │   ├── migrations
 │   │   ├── 20260707052931_init
 │   │   │   └── migration.sql
-│   │   └── 20260707013536_add_onboarding
-│   │       └── migration.sql
+│   │   ├── 20260707053000_add_onboarding
+│   │   │   └── migration.sql
+│   │   └── migration_lock.toml
 │   ├── schema.prisma
 │   └── seed.ts
 ├── public
-│   ├── file.svg
-│   ├── globe.svg
-│   ├── images
-│   │   ├── chatbot-abstract.svg
-│   │   ├── code-screen.svg
-│   │   ├── hero-dashboard.png
-│   │   ├── hero-dashboard.svg
-│   │   ├── hero.webp
-│   │   ├── klikktek-logo-horizontal.svg
-│   │   ├── project-dashboard.svg
-│   │   ├── project-map.svg
-│   │   ├── server-room.svg
-│   │   └── sigma-wholesale
-│   │       ├── admin
-│   │       │   ├── admin-2.png
-│   │       │   ├── admin-3.png
-│   │       │   ├── admin-4.png
-│   │       │   ├── admin-5.png
-│   │       │   └── admin-6.png
-│   │       └── customer
-│   │           ├── customer-1.png
-│   │           ├── customer-2.png
-│   │           ├── customer-3.png
-│   │           ├── customer-4.png
-│   │           ├── customer-5.png
-│   │           ├── customer-6.png
-│   │           ├── customer-7.png
-│   │           └── Screenshot 2026-06-16 at 11.53.07 AM.png
-│   ├── next.svg
-│   ├── vercel.svg
-│   └── window.svg
+│   ├── images
+│   │   ├── sigma-wholesale
+│   │   │   ├── admin
+│   │   │   │   ├── admin-2.png
+│   │   │   │   ├── admin-3.png
+│   │   │   │   ├── admin-4.png
+│   │   │   │   ├── admin-5.png
+│   │   │   │   └── admin-6.png
+│   │   │   └── customer
+│   │   │       ├── customer-1.png
+│   │   │       ├── customer-2.png
+│   │   │       ├── customer-3.png
+│   │   │       ├── customer-4.png
+│   │   │       ├── customer-5.png
+│   │   │       ├── customer-6.png
+│   │   │       └── customer-7.png
+│   │   └── klikktek-logo-horizontal.svg
+│   ├── file.svg
+│   ├── globe.svg
+│   ├── next.svg
+│   ├── vercel.svg
+│   └── window.svg
 ├── README.md
 ├── src
-│   ├── app
-│   │   ├── admin
-│   │   │   ├── actions.ts
-│   │   │   ├── (auth)
-│   │   │   │   ├── layout.tsx
-│   │   │   │   └── login
-│   │   │   │      ├── actions.ts
-│   │   │   │      └── page.tsx
-│   │   │   └── (dashboard)
-│   │   │      ├── layout.tsx
-│   │   │      ├── page.tsx
-│   │   │      └── tenants
-│   │   │         ├── actions.ts
-│   │   │         ├── new
-│   │   │         │   └── page.tsx
-│   │   │         └── [id]
-│   │   │            └── page.tsx
-│   │   ├── api
-│   │   │   ├── create-payment-intent
-│   │   │   │   └── route.ts
-│   │   │   ├── cta-contact
-│   │   │   │   └── route.ts
-│   │   │   ├── generate-invoice
-│   │   │   │   └── route.ts
-│   │   │   ├── inquiry
-│   │   │   │   └── route.ts
-│   │   │   └── webhook
-│   │   │       └── route.ts
-│   │   ├── contact
-│   │   │   └── page.tsx
-│   │   ├── favicon.ico
-│   │   ├── globals.css
-│   │   ├── kt-invoice
-│   │   │   └── page.tsx
-│   │   ├── layout.tsx
-│   │   ├── not-found.tsx
-│   │   ├── onboarding
-│   │   │   └── [token]
-│   │   │      ├── actions.ts
-│   │   │      └── page.tsx
-│   │   ├── page.tsx
-│   │   ├── projects
-│   │   │   └── page.tsx
-│   │   ├── robots.ts
-│   │   ├── services
-│   │   │   └── page.tsx
-│   │   └── sitemap.ts
-│   ├── components
-│   │   ├── atoms
-│   │   │   ├── avatar
-│   │   │   │   ├── avatar.tsx
-│   │   │   │   └── index.ts
-│   │   │   ├── badge
-│   │   │   │   ├── badge.tsx
-│   │   │   │   └── index.ts
-│   │   │   ├── button
-│   │   │   │   ├── button.tsx
-│   │   │   │   └── index.ts
-│   │   │   ├── divider
-│   │   │   │   ├── divider.tsx
-│   │   │   │   └── index.ts
-│   │   │   ├── icon
-│   │   │   │   ├── icon.tsx
-│   │   │   │   └── index.ts
-│   │   │   ├── input
-│   │   │   │   ├── index.ts
-│   │   │   │   └── input.tsx
-│   │   │   ├── modal
-│   │   │   │   ├── index.ts
-│   │   │   │   └── modal.tsx
-│   │   │   ├── json-ld
-│   │   │   │   ├── index.ts
-│   │   │   │   └── json-ld.tsx
-│   │   │   ├── select
-│   │   │   │   ├── index.ts
-│   │   │   │   └── select.tsx
-│   │   │   ├── tag
-│   │   │   │   ├── index.ts
-│   │   │   │   └── tag.tsx
-│   │   │   └── textarea
-│   │   │       ├── index.ts
-│   │   │       └── textarea.tsx
-│   │   ├── molecules
-│   │   │   ├── admin-nav-button
-│   │   │   │   ├── admin-nav-button.tsx
-│   │   │   │   └── index.ts
-│   │   │   ├── admin-form-feedback
-│   │   │   │   ├── admin-form-feedback.tsx
-│   │   │   │   └── index.ts
-│   │   │   ├── admin-nav-link
-│   │   │   │   ├── admin-nav-link.tsx
-│   │   │   │   └── index.ts
-│   │   │   ├── admin-page-header
-│   │   │   │   ├── admin-page-header.tsx
-│   │   │   │   └── index.ts
-│   │   │   ├── admin-secret-reveal
-│   │   │   │   ├── admin-secret-reveal.tsx
-│   │   │   │   └── index.ts
-│   │   │   ├── admin-section-card
-│   │   │   │   ├── admin-section-card.tsx
-│   │   │   │   └── index.ts
-│   │   │   ├── admin-section-nav
-│   │   │   │   ├── admin-section-nav.tsx
-│   │   │   │   └── index.ts
-│   │   │   ├── breadcrumbs
-│   │   │   │   ├── breadcrumbs.tsx
-│   │   │   │   └── index.ts
-│   │   │   ├── compact-testimonial-card
-│   │   │   │   ├── compact-testimonial-card.tsx
-│   │   │   │   └── index.ts
-│   │   │   ├── contact-info-block
-│   │   │   │   ├── contact-info-block.tsx
-│   │   │   │   └── index.ts
-│   │   │   ├── copy-button
-│   │   │   │   ├── copy-button.tsx
-│   │   │   │   └── index.ts
-│   │   │   ├── featured-case-study-card
-│   │   │   │   ├── featured-case-study-card.tsx
-│   │   │   │   └── index.ts
-│   │   │   ├── form-field
-│   │   │   │   ├── form-field.tsx
-│   │   │   │   └── index.ts
-│   │   │   ├── metric-card
-│   │   │   │   ├── index.ts
-│   │   │   │   └── metric-card.tsx
-│   │   │   ├── mobile-nav
-│   │   │   │   ├── index.ts
-│   │   │   │   └── mobile-nav.tsx
-│   │   │   ├── nav-link
-│   │   │   │   ├── index.ts
-│   │   │   │   └── nav-link.tsx
-│   │   │   ├── newsletter-form
-│   │   │   │   ├── index.ts
-│   │   │   │   └── newsletter-form.tsx
-│   │   │   ├── progress-bar
-│   │   │   │   ├── index.ts
-│   │   │   │   └── progress-bar.tsx
-│   │   │   ├── project-card
-│   │   │   │   ├── index.ts
-│   │   │   │   └── project-card.tsx
-│   │   │   ├── project-carousel
-│   │   │   │   ├── index.tsx
-│   │   │   │   └── project-carousel.tsx
-│   │   │   ├── project-carousel-card
-│   │   │   │   ├── index.tsx
-│   │   │   │   └── project-carousel-card.tsx
-│   │   │   ├── satisfaction-stat-card
-│   │   │   │   ├── index.ts
-│   │   │   │   └── satisfaction-stat-card.tsx
-│   │   │   ├── service-card
-│   │   │   │   ├── index.ts
-│   │   │   │   └── service-card.tsx
-│   │   │   ├── status-badge
-│   │   │   │   ├── index.ts
-│   │   │   │   └── status-badge.tsx
-│   │   │   ├── tenant-status-badge
-│   │   │   │   ├── index.ts
-│   │   │   │   └── tenant-status-badge.tsx
-│   │   │   └── testimonial-card
-│   │   │       ├── index.ts
-│   │   │       └── testimonial-card.tsx
-│   │   ├── organisms
-│   │   │   ├── admin-delete-tenant-form
-│   │   │   │   ├── admin-delete-tenant-form.tsx
-│   │   │   │   └── index.ts
-│   │   │   ├── admin-dashboard-stats
-│   │   │   │   ├── admin-dashboard-stats.tsx
-│   │   │   │   └── index.ts
-│   │   │   ├── admin-effective-features
-│   │   │   │   ├── admin-effective-features.tsx
-│   │   │   │   └── index.ts
-│   │   │   ├── admin-feature-overrides-editor
-│   │   │   │   ├── admin-feature-overrides-editor.tsx
-│   │   │   │   └── index.ts
-│   │   │   ├── admin-login-modal
-│   │   │   │   ├── admin-login-modal.tsx
-│   │   │   │   └── index.ts
-│   │   │   ├── admin-login-form
-│   │   │   │   ├── admin-login-form.tsx
-│   │   │   │   └── index.ts
-│   │   │   ├── admin-onboarding-link-form
-│   │   │   │   ├── admin-onboarding-link-form.tsx
-│   │   │   │   └── index.ts
-│   │   │   ├── admin-onboarding-summary
-│   │   │   │   ├── admin-onboarding-summary.tsx
-│   │   │   │   └── index.ts
-│   │   │   ├── admin-sync-tenant-form
-│   │   │   │   ├── admin-sync-tenant-form.tsx
-│   │   │   │   └── index.ts
-│   │   │   ├── admin-tenant-form
-│   │   │   │   ├── admin-tenant-form.tsx
-│   │   │   │   └── index.ts
-│   │   │   ├── admin-tenant-header
-│   │   │   │   ├── admin-tenant-header.tsx
-│   │   │   │   └── index.ts
-│   │   │   ├── admin-tenants-table
-│   │   │   │   ├── admin-tenants-table.tsx
-│   │   │   │   └── index.ts
-│   │   │   ├── atoms-preview
-│   │   │   ├── contact-hero
-│   │   │   │   ├── contact-hero.tsx
-│   │   │   │   └── index.ts
-│   │   │   ├── cta-banner
-│   │   │   │   ├── cta-banner.tsx
-│   │   │   │   └── index.ts
-│   │   │   ├── hero-section
-│   │   │   │   ├── hero-section.tsx
-│   │   │   │   └── index.ts
-│   │   │   ├── innovation-section
-│   │   │   │   ├── index.ts
-│   │   │   │   └── innovation-section.tsx
-│   │   │   ├── inquiry-section
-│   │   │   │   ├── index.ts
-│   │   │   │   └── inquiry-section.tsx
-│   │   │   ├── onboarding-form
-│   │   │   │   ├── index.ts
-│   │   │   │   └── onboarding-form.tsx
-│   │   │   ├── page-hero
-│   │   │   │   ├── index.ts
-│   │   │   │   └── page-hero.tsx
-│   │   │   ├── payment-section
-│   │   │   │   ├── index.ts
-│   │   │   │   ├── payment-section.tsx
-│   │   │   │   └── payment-success-banner.tsx
-│   │   │   ├── portfolio-featured
-│   │   │   │   ├── index.ts
-│   │   │   │   └── portfolio-featured.tsx
-│   │   │   ├── provision-tenant-form
-│   │   │   │   ├── index.ts
-│   │   │   │   └── provision-tenant-form.tsx
-│   │   │   ├── services-bento-grid
-│   │   │   │   ├── index.ts
-│   │   │   │   └── services-bento-grid.tsx
-│   │   │   ├── services-overview
-│   │   │   │   ├── index.ts
-│   │   │   │   └── services-overview.tsx
-│   │   │   ├── services-preview
-│   │   │   │   ├── index.ts
-│   │   │   │   └── services-preview.tsx
-│   │   │   ├── site-footer
-│   │   │   │   ├── index.ts
-│   │   │   │   └── site-footer.tsx
-│   │   │   ├── site-header
-│   │   │   │   ├── index.ts
-│   │   │   │   └── site-header.tsx
-│   │   │   ├── social-proof-grid
-│   │   │   │   ├── index.ts
-│   │   │   │   └── social-proof-grid.tsx
-│   │   │   ├── success-story-section
-│   │   │   │   ├── index.ts
-│   │   │   │   └── success-story-section.tsx
-│   │   │   └── testimonials-section
-│   │   │       ├── index.ts
-│   │   │       └── testimonials-section.tsx
-│   │   └── templates
-│   │       ├── admin-layout
-│   │       │   ├── admin-layout.tsx
-│   │       │   ├── admin-mobile-nav.tsx
-│   │       │   ├── admin-sidebar.tsx
-│   │       │   ├── admin-topbar.tsx
-│   │       │   └── index.ts
-│   │       └── marketing-layout
-│   │           ├── index.ts
-│   │           ├── marketing-container.tsx
-│   │           └── marketing-layout.tsx
-│   ├── core
-│   │   └── logic
-│   │      ├── admin-auth.ts
-│   │      ├── feature-keys.ts
-│   │      ├── password.ts
-│   │      ├── session-token.ts
-│   │      ├── tenant-provisioning.ts
-│   │      ├── tenant-sync.ts
-│   │      └── tenants.ts
-│   ├── generated
-│   │   └── prisma           # Prisma-generated client (gitignored), custom output path
-│   └── lib
-│       ├── constants
-│       │   ├── admin-navigation.ts
-│       │   └── navigation.ts
-│       ├── content
-│       │   ├── contact.ts
-│       │   ├── home.ts
-│       │   ├── projects.ts
-│       │   └── services.ts
-│       ├── pdf
-│       │   └── invoice-document.tsx
-│       ├── prisma.ts
-│       ├── seo
-│       │   ├── metadata.ts
-│       │   ├── page-seo.ts
-│       │   ├── projects-seo.ts
-│       │   ├── schema.ts
-│       │   └── site-config.ts
-│       ├── uploads.ts
-│       └── utils
-│           └── cn.ts
-├── tsconfig.json
-└── tsconfig.tsbuildinfo
+│   ├── app
+│   │   ├── admin
+│   │   │   ├── (auth)
+│   │   │   │   ├── login
+│   │   │   │   │   ├── actions.ts
+│   │   │   │   │   └── page.tsx
+│   │   │   │   └── layout.tsx
+│   │   │   ├── (dashboard)
+│   │   │   │   ├── tenants
+│   │   │   │   │   ├── [id]
+│   │   │   │   │   │   └── page.tsx
+│   │   │   │   │   ├── new
+│   │   │   │   │   │   └── page.tsx
+│   │   │   │   │   └── actions.ts
+│   │   │   │   ├── layout.tsx
+│   │   │   │   └── page.tsx
+│   │   │   └── actions.ts
+│   │   ├── api
+│   │   │   ├── book-call
+│   │   │   │   └── route.ts
+│   │   │   └── generate-invoice
+│   │   │       └── route.ts
+│   │   ├── contact
+│   │   │   └── page.tsx
+│   │   ├── kt-invoice
+│   │   │   └── page.tsx
+│   │   ├── onboarding
+│   │   │   └── [token]
+│   │   │       ├── actions.ts
+│   │   │       └── page.tsx
+│   │   ├── projects
+│   │   │   └── page.tsx
+│   │   ├── services
+│   │   │   └── page.tsx
+│   │   ├── favicon.ico
+│   │   ├── globals.css
+│   │   ├── layout.tsx
+│   │   ├── not-found.tsx
+│   │   ├── page.tsx
+│   │   ├── robots.ts
+│   │   └── sitemap.ts
+│   ├── components
+│   │   ├── atoms
+│   │   │   ├── avatar
+│   │   │   │   ├── avatar.tsx
+│   │   │   │   └── index.ts
+│   │   │   ├── badge
+│   │   │   │   ├── badge.tsx
+│   │   │   │   └── index.ts
+│   │   │   ├── button
+│   │   │   │   ├── button.tsx
+│   │   │   │   └── index.ts
+│   │   │   ├── icon
+│   │   │   │   ├── icon.tsx
+│   │   │   │   └── index.ts
+│   │   │   ├── input
+│   │   │   │   ├── index.ts
+│   │   │   │   └── input.tsx
+│   │   │   ├── json-ld
+│   │   │   │   ├── index.ts
+│   │   │   │   └── json-ld.tsx
+│   │   │   ├── modal
+│   │   │   │   ├── index.ts
+│   │   │   │   └── modal.tsx
+│   │   │   ├── select
+│   │   │   │   ├── index.ts
+│   │   │   │   └── select.tsx
+│   │   │   ├── tag
+│   │   │   │   ├── index.ts
+│   │   │   │   └── tag.tsx
+│   │   │   └── textarea
+│   │   │       ├── index.ts
+│   │   │       └── textarea.tsx
+│   │   ├── molecules
+│   │   │   ├── admin-form-feedback
+│   │   │   │   ├── admin-form-feedback.tsx
+│   │   │   │   └── index.ts
+│   │   │   ├── admin-nav-link
+│   │   │   │   ├── admin-nav-link.tsx
+│   │   │   │   └── index.ts
+│   │   │   ├── admin-page-header
+│   │   │   │   ├── admin-page-header.tsx
+│   │   │   │   └── index.ts
+│   │   │   ├── admin-secret-reveal
+│   │   │   │   ├── admin-secret-reveal.tsx
+│   │   │   │   └── index.ts
+│   │   │   ├── admin-section-card
+│   │   │   │   ├── admin-section-card.tsx
+│   │   │   │   └── index.ts
+│   │   │   ├── admin-section-nav
+│   │   │   │   ├── admin-section-nav.tsx
+│   │   │   │   └── index.ts
+│   │   │   ├── booking-calendar
+│   │   │   │   ├── booking-calendar.tsx
+│   │   │   │   └── index.ts
+│   │   │   ├── breadcrumbs
+│   │   │   │   ├── breadcrumbs.tsx
+│   │   │   │   └── index.ts
+│   │   │   ├── copy-button
+│   │   │   │   ├── copy-button.tsx
+│   │   │   │   └── index.ts
+│   │   │   ├── form-field
+│   │   │   │   ├── form-field.tsx
+│   │   │   │   └── index.ts
+│   │   │   ├── hash-scroll-handler
+│   │   │   │   ├── hash-scroll-handler.tsx
+│   │   │   │   └── index.ts
+│   │   │   ├── header-schedule-link
+│   │   │   │   ├── header-schedule-link.tsx
+│   │   │   │   └── index.ts
+│   │   │   ├── mobile-nav
+│   │   │   │   ├── index.ts
+│   │   │   │   └── mobile-nav.tsx
+│   │   │   ├── nav-link
+│   │   │   │   ├── index.ts
+│   │   │   │   └── nav-link.tsx
+│   │   │   ├── process-timeline-step
+│   │   │   │   ├── index.ts
+│   │   │   │   └── process-timeline-step.tsx
+│   │   │   ├── project-carousel
+│   │   │   │   ├── index.tsx
+│   │   │   │   └── project-carousel.tsx
+│   │   │   ├── project-carousel-card
+│   │   │   │   ├── index.tsx
+│   │   │   │   └── project-carousel-card.tsx
+│   │   │   ├── service-offering-card
+│   │   │   │   ├── index.ts
+│   │   │   │   └── service-offering-card.tsx
+│   │   │   ├── tenant-status-badge
+│   │   │   │   ├── index.ts
+│   │   │   │   └── tenant-status-badge.tsx
+│   │   │   ├── theme-toggle
+│   │   │   │   ├── index.ts
+│   │   │   │   └── theme-toggle.tsx
+│   │   │   └── testimonial-card
+│   │   │       ├── index.ts
+│   │   │       └── testimonial-card.tsx
+│   │   ├── organisms
+│   │   │   ├── admin-dashboard-stats
+│   │   │   │   ├── admin-dashboard-stats.tsx
+│   │   │   │   └── index.ts
+│   │   │   ├── admin-delete-tenant-form
+│   │   │   │   ├── admin-delete-tenant-form.tsx
+│   │   │   │   └── index.ts
+│   │   │   ├── admin-effective-features
+│   │   │   │   ├── admin-effective-features.tsx
+│   │   │   │   └── index.ts
+│   │   │   ├── admin-feature-overrides-editor
+│   │   │   │   ├── admin-feature-overrides-editor.tsx
+│   │   │   │   └── index.ts
+│   │   │   ├── admin-login-form
+│   │   │   │   ├── admin-login-form.tsx
+│   │   │   │   └── index.ts
+│   │   │   ├── admin-onboarding-link-form
+│   │   │   │   ├── admin-onboarding-link-form.tsx
+│   │   │   │   └── index.ts
+│   │   │   ├── admin-onboarding-summary
+│   │   │   │   ├── admin-onboarding-summary.tsx
+│   │   │   │   └── index.ts
+│   │   │   ├── admin-sync-tenant-form
+│   │   │   │   ├── admin-sync-tenant-form.tsx
+│   │   │   │   └── index.ts
+│   │   │   ├── admin-tenant-form
+│   │   │   │   ├── admin-tenant-form.tsx
+│   │   │   │   └── index.ts
+│   │   │   ├── admin-tenant-header
+│   │   │   │   ├── admin-tenant-header.tsx
+│   │   │   │   └── index.ts
+│   │   │   ├── admin-tenants-table
+│   │   │   │   ├── admin-tenants-table.tsx
+│   │   │   │   └── index.ts
+│   │   │   ├── book-call-section
+│   │   │   │   ├── book-call-section.tsx
+│   │   │   │   └── index.ts
+│   │   │   ├── hero-section
+│   │   │   │   ├── hero-section.tsx
+│   │   │   │   └── index.ts
+│   │   │   ├── how-it-works-section
+│   │   │   │   ├── how-it-works-section.tsx
+│   │   │   │   └── index.ts
+│   │   │   ├── onboarding-form
+│   │   │   │   ├── index.ts
+│   │   │   │   └── onboarding-form.tsx
+│   │   │   ├── portfolio-featured
+│   │   │   │   ├── index.ts
+│   │   │   │   └── portfolio-featured.tsx
+│   │   │   ├── provision-tenant-form
+│   │   │   │   ├── index.ts
+│   │   │   │   └── provision-tenant-form.tsx
+│   │   │   ├── services-section
+│   │   │   │   ├── index.ts
+│   │   │   │   └── services-section.tsx
+│   │   │   ├── site-footer
+│   │   │   │   ├── index.ts
+│   │   │   │   └── site-footer.tsx
+│   │   │   ├── site-header
+│   │   │   │   ├── index.ts
+│   │   │   │   └── site-header.tsx
+│   │   │   └── testimonials-section
+│   │   │       ├── index.ts
+│   │   │       └── testimonials-section.tsx
+│   │   └── templates
+│   │       ├── admin-layout
+│   │       │   ├── admin-layout.tsx
+│   │       │   ├── admin-mobile-nav.tsx
+│   │       │   ├── admin-sidebar.tsx
+│   │       │   ├── admin-topbar.tsx
+│   │       │   └── index.ts
+│   │       └── marketing-layout
+│   │           ├── index.ts
+│   │           ├── marketing-container.tsx
+│   │           └── marketing-layout.tsx
+│   ├── core
+│   │   └── logic
+│   │       ├── admin-auth.ts
+│   │       ├── feature-keys.ts
+│   │       ├── password.ts
+│   │       ├── session-token.ts
+│   │       ├── tenant-provisioning.ts
+│   │       ├── tenant-sync.ts
+│   │       └── tenants.ts
+│   └── lib
+│       ├── booking
+│       │   └── availability.ts
+│       ├── constants
+│       │   ├── admin-navigation.ts
+│       │   └── navigation.ts
+│       ├── content
+│       │   ├── contact.ts
+│       │   └── home.ts
+│       ├── pdf
+│       │   └── invoice-document.tsx
+│       ├── seo
+│       │   ├── metadata.ts
+│       │   ├── page-seo.ts
+│       │   ├── schema.ts
+│       │   └── site-config.ts
+│       ├── theme
+│       │   └── theme.ts
+│       ├── utils
+│       │   ├── cn.ts
+│       │   └── scroll-to-hash.ts
+│       ├── prisma.ts
+│       └── uploads.ts
+└── tsconfig.json
 ```
 Every time you add or delete a file, update the claude.md file to have the latest code folder structure

@@ -21,62 +21,44 @@ export const siteConfig = {
     width: 1024,
     height: 175,
   },
-  tagline: "Precision Intelligence for the Modern Enterprise.",
+  tagline: "Custom web solutions that drive real growth.",
   copyright: "© 2026 Klikktek. Practical Digital Solutions for Growing Businesses.",
   contactEmail: "intelligence@klikktek.com",
-  contactAddress: "100 Tech Plaza, San Francisco, CA",
 } as const;
 
 export const mainNavLinks: NavLink[] = [
-  { label: "Services", href: "/services" },
-  { label: "Contact", href: "/contact" },
+  { label: "What We Do", href: "/#services" },
+  { label: "How It Works", href: "/#how-it-works" },
+  { label: "Projects", href: "/#projects" },
+  { label: "Reviews", href: "/#reviews" },
 ];
 
 export const footerColumns: FooterColumn[] = [
   {
     title: "Solutions",
     links: [
-      { label: "Web Applications", href: "/services" },
-      { label: "Custom Chatbots", href: "/services" },
-      { label: "SEO Services", href: "/services" },
+      { label: "Web Applications", href: "/#services" },
+      { label: "Google Reviews", href: "/#services" },
+      { label: "Lead Recovery", href: "/#services" },
+      { label: "AI Chatbots", href: "/#services" },
     ],
   },
   {
-    title: "Company",
+    title: "Explore",
     links: [
+      { label: "How It Works", href: "/#how-it-works" },
       { label: "Projects", href: "/#projects" },
-      { label: "Privacy Policy", href: "#" },
+      { label: "Reviews", href: "/#reviews" },
+      { label: "Book a Call", href: "/#contact" },
     ],
   },
 ];
 
-export const footerConnectLinks: FooterLink[] = [
-  { label: "Contact Us", href: "/contact" },
-];
-
-export const contactFooterColumns: FooterColumn[] = [
-  {
-    title: "Offerings",
-    links: [
-      { label: "Services", href: "/services" },
-      { label: "Projects", href: "/#projects" },
-    ],
-  },
-  {
-    title: "Company",
-    links: [
-      { label: "Contact Us", href: "/contact" },
-      { label: "About", href: "#" },
-    ],
-  },
-  {
-    title: "Legal",
-    links: [
-      { label: "Privacy Policy", href: "#" },
-      { label: "Terms of Service", href: "#" },
-    ],
-  },
-];
-
-export const contactFooterTagline =
-  "© 2024 Klikktek. Precision Intelligence for the Modern Enterprise." as const;
+export const footerCtaContent = {
+  eyebrow: "Get started",
+  title: "Ready to talk through your project?",
+  description:
+    "Pick a time on the calendar and we'll map out the fastest path to launch.",
+  buttonLabel: "Schedule a Call",
+  buttonHref: "/#contact",
+} as const;

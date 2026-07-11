@@ -44,7 +44,7 @@
   --on-secondary-fixed: #0b1c30;
   --on-secondary-fixed-variant: #38485d;
 
-  /* Tertiary / accent */
+  /* Tertiary / accent — Klikktek blue */
   --tertiary: #000000;
   --on-tertiary: #ffffff;
   --tertiary-container: #07006c;
@@ -53,6 +53,10 @@
   --tertiary-fixed-dim: #c0c1ff;
   --on-tertiary-fixed: #07006c;
   --on-tertiary-fixed-variant: #2f2ebe;
+
+  /* Light blue accent for badges and icon circles */
+  --accent-mint: #d0e1fb;
+  --on-accent-mint: #54647a;
 
   /* Semantic */
   --error: #ba1a1a;
@@ -68,6 +72,60 @@
   --background: #f7f9fb;
   --on-background: #191c1e;
   --foreground: #191c1e;
+}
+
+.dark {
+  color-scheme: dark;
+
+  --surface: #121416;
+  --surface-dim: #121416;
+  --surface-bright: #383a3c;
+  --surface-container-lowest: #0e1012;
+  --surface-container-low: #191c1e;
+  --surface-container: #1e2123;
+  --surface-container-high: #282b2d;
+  --surface-container-highest: #333538;
+  --surface-variant: #404346;
+
+  --on-surface: #e2e2e5;
+  --on-surface-variant: #c4c6cf;
+  --inverse-surface: #e2e2e5;
+  --inverse-on-surface: #2d3133;
+
+  --outline: #8e9099;
+  --outline-variant: #404346;
+  --surface-tint: #8e9099;
+
+  --primary: #ffffff;
+  --on-primary: #000000;
+  --primary-container: #2a3142;
+  --on-primary-container: #bec6e0;
+  --inverse-primary: #3f465c;
+
+  --secondary: #b7c8e1;
+  --on-secondary: #0b1c30;
+  --secondary-container: #2a3a50;
+  --on-secondary-container: #d0e1fb;
+
+  --tertiary: #ffffff;
+  --on-tertiary: #000000;
+  --tertiary-container: #1a1870;
+  --on-tertiary-container: #9094ff;
+
+  --accent-mint: #2a3a50;
+  --on-accent-mint: #d0e1fb;
+
+  --error-container: #93000a;
+  --on-error-container: #ffdad6;
+  --success-container: #1e3d2a;
+  --on-success-container: #a8d5b5;
+
+  --background: #121416;
+  --on-background: #e2e2e5;
+  --foreground: #e2e2e5;
+
+  --shadow-card-hover: 0px 4px 12px rgba(0, 0, 0, 0.35);
+  --shadow-overlay: 0px 12px 32px rgba(0, 0, 0, 0.45);
 }
 
 @theme inline {
@@ -112,9 +170,11 @@
   --color-background: var(--background);
   --color-on-background: var(--on-background);
   --color-foreground: var(--foreground);
+  --color-accent-mint: var(--accent-mint);
+  --color-on-accent-mint: var(--on-accent-mint);
 
   /* Fonts */
-  --font-display: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-lora), ui-serif, Georgia, serif;
   --font-body: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-label: var(--font-jetbrains-mono), ui-monospace, monospace;
   --font-sans: var(--font-body);
@@ -130,9 +190,9 @@
   --spacing-container-max: 1280px;
 
   /* Border radius */
-  --radius-tag: 4px;
-  --radius-button: 6px;
-  --radius-card: 12px;
+  --radius-tag: 6px;
+  --radius-button: 8px;
+  --radius-card: 24px;
   --radius-sm: 0.125rem;
   --radius-DEFAULT: 0.25rem;
   --radius-md: 0.375rem;
@@ -144,6 +204,7 @@
   --shadow-overlay: 0px 12px 32px rgba(15, 23, 42, 0.1);
 
   /* Layout */
+  --header-height: calc(4rem + 1px);
   --container-marketing: 1280px;
 
   /* Layout widths — max-w-* reads --spacing-* in TW v4; keep these separate */
@@ -159,6 +220,10 @@ body {
   color: var(--on-background);
   font-family: var(--font-body);
   overflow-x: clip;
+}
+
+html {
+  scroll-padding-top: var(--header-height);
 }
 
 /* Typography scale */
@@ -272,7 +337,7 @@ body {
 }
 
 @utility scroll-mt-section {
-  scroll-margin-top: 5rem;
+  scroll-margin-top: 0;
 }
 
 @utility skip-link {

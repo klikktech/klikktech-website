@@ -23,13 +23,13 @@ export default function NotFound() {
             Go Home
           </Link>
           <Link
-            href="/services"
+            href="/#services"
             className="inline-flex rounded-button border border-primary px-lg py-sm text-button text-primary transition-colors hover:bg-surface-container-low"
           >
             View Services
           </Link>
           <Link
-            href="/contact"
+            href="/#contact"
             className="inline-flex rounded-button border border-outline-variant px-lg py-sm text-button text-on-surface transition-colors hover:bg-surface-container-low"
           >
             Contact Us

@@ -61,7 +61,7 @@ export async function getCurrentAdmin(): Promise<AdminUser | null> {
 export async function requireAdmin(): Promise<AdminUser> {
   const admin = await getCurrentAdmin();
   if (!admin) {
-    redirect("/");
+    redirect("/admin/login");
   }
   return admin;
 }
