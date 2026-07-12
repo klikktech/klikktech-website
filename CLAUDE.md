@@ -243,6 +243,9 @@ The tenant's own store configuration (store name, logo, contact info, currency, 
 │   │   │   ├── admin-section-nav
 │   │   │   │   ├── admin-section-nav.tsx
 │   │   │   │   └── index.ts
+│   │   │   ├── admin-tabs
+│   │   │   │   ├── admin-tabs.tsx
+│   │   │   │   └── index.ts
 │   │   │   ├── booking-calendar
 │   │   │   │   ├── booking-calendar.tsx
 │   │   │   │   └── index.ts
@@ -321,6 +324,9 @@ The tenant's own store configuration (store name, logo, contact info, currency, 
 │   │   │   │   └── index.ts
 │   │   │   ├── admin-tenant-form
 │   │   │   │   ├── admin-tenant-form.tsx
+│   │   │   │   └── index.ts
+│   │   │   ├── admin-tenant-detail
+│   │   │   │   ├── admin-tenant-detail.tsx
 │   │   │   │   └── index.ts
 │   │   │   ├── admin-tenant-header
 │   │   │   │   ├── admin-tenant-header.tsx

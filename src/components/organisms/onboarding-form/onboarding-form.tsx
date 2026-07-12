@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useRef, useState } from "react";
 import { Input } from "@/components/atoms/input";
 import { Button } from "@/components/atoms/button";
 import { FormField } from "@/components/molecules/form-field";
@@ -34,6 +34,7 @@ function formatPrice(cents: number, currency: string) {
 }
 
 export function OnboardingForm({ action, initial }: OnboardingFormProps) {
+  const formRef = useRef<HTMLFormElement>(null);
   const [state, formAction, pending] = useActionState(action, undefined);
   const [step, setStep] = useState(0);
   const [colorPaletteId, setColorPaletteId] = useState<ColorPaletteId>(
@@ -65,7 +66,7 @@ export function OnboardingForm({ action, initial }: OnboardingFormProps) {
   const totalCents = [...selectedAddons].reduce((sum, key) => sum + ADDON_CATALOG[key].priceCents, 0);
 
   return (
-    <form action={formAction} className="flex max-w-lg flex-col gap-md">
+    <form ref={formRef} action={formAction} className="flex max-w-lg flex-col gap-md">
       <ol className="flex gap-sm text-body-sm text-on-surface-variant">
         {STEPS.map((label, index) => (
           <li
@@ -187,7 +188,11 @@ export function OnboardingForm({ action, initial }: OnboardingFormProps) {
             Next
           </Button>
         ) : (
-          <Button type="submit" disabled={pending}>
+          <Button
+            type="button"
+            disabled={pending}
+            onClick={() => formRef.current?.requestSubmit()}
+          >
             {pending ? "Saving…" : "Complete setup"}
           </Button>
         )}
