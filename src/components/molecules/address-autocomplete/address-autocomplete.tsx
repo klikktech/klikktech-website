@@ -44,12 +44,24 @@ export function AddressAutocomplete({
   const containerRef = useRef<HTMLDivElement>(null);
   const widgetRef = useRef<google.maps.places.PlaceAutocompleteElement | null>(null);
   const onAddressChangeRef = useRef(onAddressChange);
+  const [address, setAddress] = useState(defaultAddress);
   const [latitude, setLatitude] = useState(defaultLatitude != null ? String(defaultLatitude) : "");
   const [longitude, setLongitude] = useState(defaultLongitude != null ? String(defaultLongitude) : "");
   const [useFallback, setUseFallback] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
 
   onAddressChangeRef.current = onAddressChange;
+
+  useEffect(() => {
+    setAddress(defaultAddress);
+    setLatitude(defaultLatitude != null ? String(defaultLatitude) : "");
+    setLongitude(defaultLongitude != null ? String(defaultLongitude) : "");
+  }, [defaultAddress, defaultLatitude, defaultLongitude]);
+
+  function updateAddress(next: string) {
+    setAddress(next);
+    onAddressChangeRef.current?.(next);
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -64,7 +76,6 @@ export function AddressAutocomplete({
         });
 
         widget.id = id;
-        widget.name = "storeAddress";
         widget.value = defaultAddress;
         widget.style.width = "100%";
         widget.style.borderRadius = "0.5rem";
@@ -80,7 +91,7 @@ export function AddressAutocomplete({
 
           const formatted = place.formattedAddress ?? widget.value;
           widget.value = formatted;
-          onAddressChangeRef.current?.(formatted);
+          updateAddress(formatted);
 
           const location = place.location;
           if (location) {
@@ -90,7 +101,7 @@ export function AddressAutocomplete({
         };
 
         const handleInput = () => {
-          onAddressChangeRef.current?.(widget.value);
+          updateAddress(widget.value);
           setLatitude("");
           setLongitude("");
         };
@@ -122,13 +133,20 @@ export function AddressAutocomplete({
           id={id}
           name="storeAddress"
           required={required}
-          defaultValue={defaultAddress}
+          value={address}
           autoComplete="street-address"
           placeholder="Enter your store address"
-          onChange={(event) => onAddressChangeRef.current?.(event.target.value)}
+          onChange={(event) => {
+            updateAddress(event.target.value);
+            setLatitude("");
+            setLongitude("");
+          }}
         />
       ) : (
-        <div ref={containerRef} className="min-h-[2.75rem] w-full" />
+        <>
+          <div ref={containerRef} className="min-h-[2.75rem] w-full" />
+          <input type="hidden" name="storeAddress" value={address} />
+        </>
       )}
       <input type="hidden" name="storeLatitude" value={latitude} />
       <input type="hidden" name="storeLongitude" value={longitude} />
