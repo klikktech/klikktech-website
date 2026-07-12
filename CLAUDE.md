@@ -67,7 +67,7 @@ When adding a new public route, follow the existing pattern: define its copy in 
 - `book-call` — discovery-call booking (name, email, phone, selected slot); sends team notification + visitor confirmation via Resend.
 - `generate-invoice` — protected by a static bearer token (`INVOICE_SECRET`); renders a PDF with `@react-pdf/renderer` from `src/lib/pdf/invoice-document.tsx` and streams it back as `application/pdf`. The client caller is `src/app/kt-invoice/page.tsx`, which sends `Authorization: Bearer ${NEXT_PUBLIC_INVOICE_SECRET}` — this is a client-exposed secret, so treat `kt-invoice` as an internal/unlisted tool, not a public-facing page.
 
-Required env vars (see `.env.local`, not committed): `RESEND_API_KEY`, `INVOICE_SECRET`, `NEXT_PUBLIC_INVOICE_SECRET`, `DATABASE_URL`, `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD`, `BLOB_READ_WRITE_TOKEN` (Vercel Blob, image uploads), `NEXT_PUBLIC_SITE_URL` (canonical/upload URL base — defaults to `https://klikktek.com` if unset). `TENANT_DB_ADMIN_URL`/`RETAIL_SOFTWARE_REPO_PATH` are optional and local-dev-only (see "Automated local provisioning" below).
+Required env vars (see `.env.local`, not committed): `RESEND_API_KEY`, `INVOICE_SECRET`, `NEXT_PUBLIC_INVOICE_SECRET`, `DATABASE_URL`, `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD`, `BLOB_READ_WRITE_TOKEN` (Vercel Blob, image uploads), `NEXT_PUBLIC_SITE_URL` (canonical/upload URL base — defaults to `https://klikktek.com` if unset), `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` (Places API for onboarding/admin store address autocomplete). `TENANT_DB_ADMIN_URL`/`RETAIL_SOFTWARE_REPO_PATH` are optional and local-dev-only (see "Automated local provisioning" below).
 
 ### Super admin portal (`/admin`)
 
@@ -88,14 +88,16 @@ This repo also hosts the **control-plane app** for the separate `retail-software
 
 ### Tenant onboarding (`/onboarding/[token]`)
 
-The tenant's own store configuration (store name, logo, contact info, currency, color preset, add-ons, open/closed) is filled in by **the tenant themselves**, not the super admin — and afterward read-only in their retail-software `/admin/settings`. Access is a one-time magic link, not a password account, since the link only ever renders this one form:
+The tenant's own store configuration (store name, logo, store address, contact info, currency, color preset, add-ons, open/closed) is filled in by **the tenant themselves**, not the super admin — access is a one-time magic link, not a password account, since the link only ever renders this one form:
 
 - `generateOnboardingLink()` / `getTenantByOnboardingToken()` / `completeOnboarding()` (`src/core/logic/tenants.ts`) mint a token (hash + 7-day expiry stored on `Tenant`, raw token shown exactly once), validate it, and on submit clear the hash (single-use) — reusing `generateSessionToken`/`hashToken` from `src/core/logic/session-token.ts` rather than new crypto code. Regenerating a link later (e.g. to fix a typo) doesn't gate on `onboardingCompletedAt`, so it just reopens the same form pre-filled with current values (including the tenant's current `colorPaletteId`/`enabledAddons`).
+- Store address uses Google Places autocomplete (`src/components/molecules/address-autocomplete/`, requires `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` with Places API enabled). Parsed server-side via `src/core/logic/store-settings-form.ts::parseStoreSettingsFormData` (shared with the admin post-onboarding editor).
 - `src/app/onboarding/[token]/page.tsx` has **no admin auth** — the token in the URL is the entire access control, same trust model as a password-reset link.
 - The form (`src/components/organisms/onboarding-form/onboarding-form.tsx`) is a **4-step wizard** (store info → color preset → add-ons → review) implemented as client-side step state over one `<form>`, not per-step server round-trips — all fields stay mounted across steps (conditionally hidden via CSS), so `FormData` always contains everything regardless of which step is visible, and `completeOnboardingAction` still runs as a single terminal `useActionState` submission exactly as before. The color-preset step renders `PalettePreviewCard` (`src/components/molecules/palette-preview-card/`) — a **static mock** (mini header/CTA/product-card styled from the palette's 3 hex values), not an iframe into a live tenant storefront. `themeId` is hardcoded to `"modern"` on submit — the layout-theme picker was removed along with `primaryColor`/`secondaryColor`/`accentColor`.
 - The logo is a real file upload, stored in **this repo's own** Vercel Blob store (`src/lib/uploads.ts::saveUploadedImage`, `@vercel/blob`'s `put()` — same swap made in retail-software, since Vercel's serverless filesystem is read-only) rather than the tenant's — there's no shared storage between the two servers. It returns Blob's own absolute URL, and retail-software just renders it as an ordinary external `<img src>` (`StoreLogo.tsx` already does this, no `next/image` domain config needed). Requires `BLOB_READ_WRITE_TOKEN` in `.env.local`.
-- `src/core/logic/tenant-sync.ts::syncOnboardingToTenant` is a **separate** function/UPDATE from `syncFeaturesToTenant`, deliberately not merged — combining them would mean clicking the existing add-ons/feature "Sync" button before onboarding is complete could blast the tenant's real `storeName`/etc. to `NULL`.
-- The super admin's only involvement is generating/regenerating the link from `/admin/tenants/[id]` (`generateOnboardingLinkAction`) — the raw link is returned once in the action's response state and never persisted in plaintext.
+- `src/core/logic/tenant-sync.ts::syncOnboardingToTenant` is a **separate** function/UPDATE from `syncFeaturesToTenant`, deliberately not merged — combining them would mean clicking the existing add-ons/feature "Sync" button before onboarding is complete could blast the tenant's real `storeName`/etc. to `NULL`. It now also syncs `storeAddress`/`storeLatitude`/`storeLongitude` — **retail-software's `StoreSettings` table needs matching columns** (manual migration on that repo; no shared package).
+- **Post-onboarding store edits:** `/admin/tenants/[id]` Overview tab's `AdminStoreSettingsForm` + `updateStoreSettingsAction` lets the super admin edit palette/store details without regenerating the onboarding link; calls `updateStoreSettings()` then `syncOnboardingToTenant()`. Add-ons remain on the Entitlements tab.
+- The super admin can still generate/regenerate the onboarding link from `/admin/tenants/[id]` (`generateOnboardingLinkAction`) when the tenant needs to re-enter details themselves — the raw link is returned once in the action's response state and never persisted in plaintext.
 
 ## Project-specific conventions (from Cursor rules)
 
@@ -120,6 +122,8 @@ The tenant's own store configuration (store name, logo, contact info, currency, 
 │   │   ├── 20260707053000_add_onboarding
 │   │   │   └── migration.sql
 │   │   ├── 20260712100000_onboarding_overhaul_color_palette_addons
+│   │   │   └── migration.sql
+│   │   ├── 20260712150000_add_store_address
 │   │   │   └── migration.sql
 │   │   └── migration_lock.toml
 │   ├── schema.prisma
@@ -225,6 +229,9 @@ The tenant's own store configuration (store name, logo, contact info, currency, 
 │   │   │       ├── index.ts
 │   │   │       └── textarea.tsx
 │   │   ├── molecules
+│   │   │   ├── address-autocomplete
+│   │   │   │   ├── address-autocomplete.tsx
+│   │   │   │   └── index.ts
 │   │   │   ├── admin-form-feedback
 │   │   │   │   ├── admin-form-feedback.tsx
 │   │   │   │   └── index.ts
@@ -316,8 +323,8 @@ The tenant's own store configuration (store name, logo, contact info, currency, 
 │   │   │   ├── admin-onboarding-link-form
 │   │   │   │   ├── admin-onboarding-link-form.tsx
 │   │   │   │   └── index.ts
-│   │   │   ├── admin-onboarding-summary
-│   │   │   │   ├── admin-onboarding-summary.tsx
+│   │   │   ├── admin-store-settings-form
+│   │   │   │   ├── admin-store-settings-form.tsx
 │   │   │   │   └── index.ts
 │   │   │   ├── admin-sync-tenant-form
 │   │   │   │   ├── admin-sync-tenant-form.tsx
@@ -383,6 +390,7 @@ The tenant's own store configuration (store name, logo, contact info, currency, 
 │   │       ├── feature-keys.ts
 │   │       ├── password.ts
 │   │       ├── session-token.ts
+│   │       ├── store-settings-form.ts
 │   │       ├── tenant-addons.ts
 │   │       ├── tenant-provisioning.ts
 │   │       ├── tenant-sync.ts

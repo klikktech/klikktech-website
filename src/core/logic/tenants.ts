@@ -82,6 +82,9 @@ export interface OnboardingInput {
   contactPhone?: string | null;
   currency: string;
   isStoreOpen: boolean;
+  storeAddress: string;
+  storeLatitude: number | null;
+  storeLongitude: number | null;
 }
 
 // Single-use: clears the token hash/expiry so the link can't be replayed.
@@ -94,5 +97,12 @@ export function completeOnboarding(tenantId: string, input: OnboardingInput) {
       onboardingTokenExpiresAt: null,
       onboardingCompletedAt: new Date(),
     },
+  });
+}
+
+export function updateStoreSettings(tenantId: string, input: OnboardingInput) {
+  return prisma.tenant.update({
+    where: { id: tenantId },
+    data: input,
   });
 }

@@ -4,6 +4,7 @@ import { useActionState, useRef, useState } from "react";
 import { Input } from "@/components/atoms/input";
 import { Button } from "@/components/atoms/button";
 import { FormField } from "@/components/molecules/form-field";
+import { AddressAutocomplete } from "@/components/molecules/address-autocomplete";
 import { PalettePreviewCard } from "@/components/molecules/palette-preview-card";
 import { cn } from "@/lib/utils/cn";
 import { COLOR_PALETTES, COLOR_PALETTE_IDS, type ColorPaletteId } from "@/core/logic/color-palettes";
@@ -20,6 +21,9 @@ interface OnboardingFormInitial {
   contactPhone: string;
   currency: string;
   isStoreOpen: boolean;
+  storeAddress: string;
+  storeLatitude: number | null;
+  storeLongitude: number | null;
 }
 
 interface OnboardingFormProps {
@@ -48,6 +52,7 @@ export function OnboardingForm({ action, initial }: OnboardingFormProps) {
         initial.enabledAddons.filter((key): key is AddonKey => (ADDON_KEYS as readonly string[]).includes(key))
       )
   );
+  const [storeAddress, setStoreAddress] = useState(initial.storeAddress);
 
   if (state?.success) {
     return <p className="text-body-md text-on-surface">Thanks — your store is set up. You can close this page.</p>;
@@ -103,6 +108,13 @@ export function OnboardingForm({ action, initial }: OnboardingFormProps) {
         <FormField id="currency" label="Currency">
           <Input id="currency" name="currency" required defaultValue={currency} />
         </FormField>
+        <AddressAutocomplete
+          defaultAddress={initial.storeAddress}
+          defaultLatitude={initial.storeLatitude}
+          defaultLongitude={initial.storeLongitude}
+          required
+          onAddressChange={setStoreAddress}
+        />
         <label className="flex items-center gap-sm text-body-sm text-on-surface">
           <input type="checkbox" name="isStoreOpen" defaultChecked={initial.isStoreOpen} />
           Store open
@@ -151,6 +163,10 @@ export function OnboardingForm({ action, initial }: OnboardingFormProps) {
       </div>
 
       <div className={cn("flex flex-col gap-lg", step !== 3 && "hidden")}>
+        <div>
+          <p className="mb-sm text-label-md text-on-surface-variant">Store address</p>
+          <p className="text-body-sm text-on-surface">{storeAddress || "—"}</p>
+        </div>
         <div>
           <p className="mb-sm text-label-md text-on-surface-variant">Color preset</p>
           <PalettePreviewCard palette={COLOR_PALETTES[colorPaletteId]} selected />

@@ -86,6 +86,9 @@ model Tenant {
   contactPhone   String?
   currency       String?
   isStoreOpen    Boolean @default(true)
+  storeAddress   String?
+  storeLatitude  Float?
+  storeLongitude Float?
 
   onboardingTokenHash      String?   @unique
   onboardingTokenExpiresAt DateTime?

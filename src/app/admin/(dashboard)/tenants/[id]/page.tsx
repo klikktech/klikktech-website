@@ -10,6 +10,7 @@ import {
   syncTenantAction,
   generateOnboardingLinkAction,
   deleteTenantAction,
+  updateStoreSettingsAction,
 } from "../actions";
 import { canDeprovisionTenantDatabase } from "@/core/logic/tenant-provisioning";
 import type { FeatureKey } from "@/core/logic/feature-keys";
@@ -60,6 +61,7 @@ export default async function TenantDetailPage({ params }: { params: Promise<{ i
         updateEnabledAddonsAction={updateEnabledAddonsAction.bind(null, tenant.id)}
         syncTenantAction={syncTenantAction.bind(null, tenant.id)}
         generateOnboardingLinkAction={generateOnboardingLinkAction.bind(null, tenant.id)}
+        updateStoreSettingsAction={updateStoreSettingsAction.bind(null, tenant.id)}
         deleteTenantAction={deleteTenantAction.bind(null, tenant.id)}
       />
     </div>

@@ -8,7 +8,7 @@ import { AdminEffectiveFeatures } from "@/components/organisms/admin-effective-f
 import { AdminAddonsEditor } from "@/components/organisms/admin-addons-editor";
 import { AdminSyncTenantForm } from "@/components/organisms/admin-sync-tenant-form";
 import { AdminOnboardingLinkForm } from "@/components/organisms/admin-onboarding-link-form";
-import { AdminOnboardingSummary } from "@/components/organisms/admin-onboarding-summary";
+import { AdminStoreSettingsForm } from "@/components/organisms/admin-store-settings-form";
 import { AdminDeleteTenantForm } from "@/components/organisms/admin-delete-tenant-form";
 import type { FeatureKey } from "@/core/logic/feature-keys";
 import type { Tenant } from "@/generated/prisma/client";
@@ -39,6 +39,7 @@ type AdminTenantDetailProps = {
     state: OnboardingFormState | undefined,
     formData: FormData,
   ) => Promise<OnboardingFormState>;
+  updateStoreSettingsAction: (state: FormState | undefined, formData: FormData) => Promise<FormState>;
   deleteTenantAction: (state: FormState | undefined, formData: FormData) => Promise<FormState>;
 };
 
@@ -52,6 +53,7 @@ export function AdminTenantDetail({
   updateEnabledAddonsAction,
   syncTenantAction,
   generateOnboardingLinkAction,
+  updateStoreSettingsAction,
   deleteTenantAction,
 }: AdminTenantDetailProps) {
   const registryInitial: TenantFormInitial = {
@@ -72,7 +74,11 @@ export function AdminTenantDetail({
           <div className="grid gap-lg lg:grid-cols-2">
             <AdminSectionCard
               title="Onboarding"
-              description="Send the tenant a one-time link to configure their store."
+              description={
+                tenant.onboardingCompletedAt
+                  ? "Regenerate a link only if the tenant needs to re-enter details themselves."
+                  : "Send the tenant a one-time link to configure their store."
+              }
             >
               <AdminOnboardingLinkForm
                 action={generateOnboardingLinkAction}
@@ -91,8 +97,25 @@ export function AdminTenantDetail({
           </div>
 
           {tenant.onboardingCompletedAt ? (
-            <AdminSectionCard title="Store configuration">
-              <AdminOnboardingSummary tenant={tenant} />
+            <AdminSectionCard
+              title="Store configuration"
+              description="Edit store details here — changes sync directly to the tenant database."
+            >
+              <AdminStoreSettingsForm
+                action={updateStoreSettingsAction}
+                initial={{
+                  storeName: tenant.storeName ?? "",
+                  logoUrl: tenant.logoUrl ?? "",
+                  colorPaletteId: tenant.colorPaletteId,
+                  contactEmail: tenant.contactEmail ?? "",
+                  contactPhone: tenant.contactPhone ?? "",
+                  currency: tenant.currency ?? "USD",
+                  isStoreOpen: tenant.isStoreOpen,
+                  storeAddress: tenant.storeAddress ?? "",
+                  storeLatitude: tenant.storeLatitude,
+                  storeLongitude: tenant.storeLongitude,
+                }}
+              />
             </AdminSectionCard>
           ) : null}
         </>

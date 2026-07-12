@@ -51,6 +51,9 @@ export async function syncOnboardingToTenant(
     | "contactPhone"
     | "currency"
     | "isStoreOpen"
+    | "storeAddress"
+    | "storeLatitude"
+    | "storeLongitude"
   >
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   const client = new Client({ connectionString: tenant.databaseUrl });
@@ -66,7 +69,10 @@ export async function syncOnboardingToTenant(
         "contactEmail" = $6,
         "contactPhone" = $7,
         "currency" = $8,
-        "isStoreOpen" = $9
+        "isStoreOpen" = $9,
+        "storeAddress" = $10,
+        "storeLatitude" = $11,
+        "storeLongitude" = $12
       WHERE id = 1`,
       [
         tenant.storeName,
@@ -78,6 +84,9 @@ export async function syncOnboardingToTenant(
         tenant.contactPhone,
         tenant.currency,
         tenant.isStoreOpen,
+        tenant.storeAddress,
+        tenant.storeLatitude,
+        tenant.storeLongitude,
       ]
     );
     return { ok: true };

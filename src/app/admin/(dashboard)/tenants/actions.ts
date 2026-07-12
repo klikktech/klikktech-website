@@ -10,6 +10,7 @@ import {
   getTenant,
   deleteTenant,
   generateOnboardingLink,
+  updateStoreSettings,
   type TenantInput,
 } from "@/core/logic/tenants";
 import {
@@ -17,11 +18,12 @@ import {
   deprovisionTenantDatabase,
   canDeprovisionTenantDatabase,
 } from "@/core/logic/tenant-provisioning";
-import { syncFeaturesToTenant } from "@/core/logic/tenant-sync";
+import { syncFeaturesToTenant, syncOnboardingToTenant } from "@/core/logic/tenant-sync";
 import { FEATURE_KEYS } from "@/core/logic/feature-keys";
 import { applyEnabledAddons } from "@/core/logic/tenant-addons";
 import { ADDON_KEYS } from "@/core/logic/addon-catalog";
 import { deleteUploadedImageIfLocal } from "@/lib/uploads";
+import { parseStoreSettingsFormData } from "@/core/logic/store-settings-form";
 import { siteUrl } from "@/lib/seo/site-config";
 import type { TenantStatus } from "@/generated/prisma/client";
 
@@ -202,6 +204,25 @@ export async function generateOnboardingLinkAction(
   const token = await generateOnboardingLink(id);
   revalidatePath(`/admin/tenants/${id}`);
   return { link: `${siteUrl.replace(/\/$/, "")}/onboarding/${token}` };
+}
+
+export async function updateStoreSettingsAction(
+  id: string,
+  _prevState: FormState | undefined,
+  formData: FormData,
+): Promise<FormState> {
+  await requireAdmin();
+  const tenant = await getTenant(id);
+  if (!tenant) return { error: "Tenant not found." };
+
+  const parsed = await parseStoreSettingsFormData(formData, tenant.logoUrl);
+  if ("error" in parsed) return { error: parsed.error };
+
+  const updated = await updateStoreSettings(id, parsed.input);
+  const result = await syncOnboardingToTenant(updated);
+  revalidatePath(`/admin/tenants/${id}`);
+  if (!result.ok) return { error: `Saved, but failed to sync to store: ${result.error}` };
+  return {};
 }
 
 export async function deleteTenantAction(

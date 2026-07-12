@@ -32,6 +32,9 @@ export default async function OnboardingPage({ params }: { params: Promise<{ tok
             contactPhone: tenant.contactPhone ?? "",
             currency: tenant.currency ?? "USD",
             isStoreOpen: tenant.isStoreOpen,
+            storeAddress: tenant.storeAddress ?? "",
+            storeLatitude: tenant.storeLatitude,
+            storeLongitude: tenant.storeLongitude,
           }}
         />
       </div>
