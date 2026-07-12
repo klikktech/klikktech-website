@@ -1,4 +1,5 @@
 import { Badge } from "@/components/atoms/badge";
+import { getColorPalette } from "@/core/logic/color-palettes";
 import type { Tenant } from "@/generated/prisma/client";
 
 type AdminOnboardingSummaryProps = {
@@ -7,9 +8,7 @@ type AdminOnboardingSummaryProps = {
     | "storeName"
     | "themeId"
     | "logoUrl"
-    | "primaryColor"
-    | "secondaryColor"
-    | "accentColor"
+    | "colorPaletteId"
     | "contactEmail"
     | "contactPhone"
     | "currency"
@@ -17,19 +16,6 @@ type AdminOnboardingSummaryProps = {
     | "onboardingCompletedAt"
   >;
 };
-
-function ColorSwatch({ color, label }: { color: string; label: string }) {
-  return (
-    <div className="flex items-center gap-xs">
-      <span
-        className="size-5 shrink-0 rounded-tag border border-outline-variant"
-        style={{ backgroundColor: color }}
-        title={color}
-      />
-      <span className="text-label-md text-on-surface-variant">{label}</span>
-    </div>
-  );
-}
 
 function SummaryRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
@@ -48,6 +34,8 @@ export function AdminOnboardingSummary({ tenant }: AdminOnboardingSummaryProps) 
       </p>
     );
   }
+
+  const palette = getColorPalette(tenant.colorPaletteId);
 
   return (
     <dl className="flex flex-col gap-md">
@@ -79,22 +67,23 @@ export function AdminOnboardingSummary({ tenant }: AdminOnboardingSummaryProps) 
       {tenant.contactEmail ? <SummaryRow label="Contact email" value={tenant.contactEmail} /> : null}
       {tenant.contactPhone ? <SummaryRow label="Contact phone" value={tenant.contactPhone} /> : null}
 
-      {(tenant.primaryColor || tenant.secondaryColor || tenant.accentColor) ? (
-        <div>
-          <dt className="text-label-md text-on-surface-variant mb-sm">Brand colors</dt>
-          <dd className="flex flex-wrap gap-md">
-            {tenant.primaryColor ? (
-              <ColorSwatch color={tenant.primaryColor} label="Primary" />
-            ) : null}
-            {tenant.secondaryColor ? (
-              <ColorSwatch color={tenant.secondaryColor} label="Secondary" />
-            ) : null}
-            {tenant.accentColor ? (
-              <ColorSwatch color={tenant.accentColor} label="Accent" />
-            ) : null}
-          </dd>
-        </div>
-      ) : null}
+      <SummaryRow
+        label="Color palette"
+        value={
+          <span className="flex items-center justify-end gap-xs">
+            <span className="flex -space-x-1">
+              {[palette.primary, palette.secondary, palette.accent].map((color) => (
+                <span
+                  key={color}
+                  className="size-4 rounded-full border border-surface"
+                  style={{ backgroundColor: color }}
+                />
+              ))}
+            </span>
+            {palette.label}
+          </span>
+        }
+      />
 
       <SummaryRow
         label="Completed"

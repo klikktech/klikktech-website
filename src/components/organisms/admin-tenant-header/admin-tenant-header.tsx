@@ -1,18 +1,17 @@
 import { Badge } from "@/components/atoms/badge";
 import { TenantStatusBadge } from "@/components/molecules/tenant-status-badge";
-import { PLAN_LABELS, type PlanId } from "@/core/logic/feature-keys";
 import type { Tenant } from "@/generated/prisma/client";
 
 type AdminTenantHeaderProps = {
   tenant: Pick<
     Tenant,
-    "name" | "slug" | "status" | "planId" | "storeName" | "onboardingCompletedAt"
+    "name" | "slug" | "status" | "enabledAddons" | "storeName" | "onboardingCompletedAt"
   >;
 };
 
 export function AdminTenantHeader({ tenant }: AdminTenantHeaderProps) {
   const isOnboarded = Boolean(tenant.onboardingCompletedAt);
-  const planLabel = PLAN_LABELS[tenant.planId as PlanId] ?? tenant.planId;
+  const addonCount = Array.isArray(tenant.enabledAddons) ? tenant.enabledAddons.length : 0;
 
   return (
     <header className="mb-lg rounded-card border border-outline-variant bg-surface-container-low p-lg">
@@ -26,7 +25,7 @@ export function AdminTenantHeader({ tenant }: AdminTenantHeaderProps) {
         </div>
         <div className="flex flex-wrap items-center gap-sm">
           <TenantStatusBadge status={tenant.status} />
-          <Badge variant="accent">{planLabel}</Badge>
+          <Badge variant="accent">{addonCount} add-on{addonCount === 1 ? "" : "s"}</Badge>
           <Badge variant={isOnboarded ? "success" : "default"}>
             {isOnboarded ? "Onboarded" : "Onboarding pending"}
           </Badge>

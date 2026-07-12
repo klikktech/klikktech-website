@@ -27,12 +27,9 @@ export function AdminSecretReveal({ title, description, items, className }: Admi
       <p className="text-body-sm text-on-surface-variant mb-md">{description}</p>
       <div className="flex flex-col gap-sm">
         {items.map((item) => (
-          <div
-            key={item.label}
-            className="flex flex-col gap-xs sm:flex-row sm:items-center sm:justify-between"
-          >
+          <div key={item.label} className="flex flex-col gap-xs">
             <span className="text-label-md text-on-surface-variant normal-case">{item.label}</span>
-            <div className="flex min-w-0 items-center gap-sm">
+            <div className="flex items-start gap-sm">
               <code className="min-w-0 flex-1 break-all font-mono text-body-sm text-on-surface">
                 {item.value}
               </code>

@@ -7,6 +7,7 @@ import { AdminTenantHeader } from "@/components/organisms/admin-tenant-header";
 import { AdminTenantForm } from "@/components/organisms/admin-tenant-form";
 import { AdminFeatureOverridesEditor } from "@/components/organisms/admin-feature-overrides-editor";
 import { AdminEffectiveFeatures } from "@/components/organisms/admin-effective-features";
+import { AdminAddonsEditor } from "@/components/organisms/admin-addons-editor";
 import { AdminSyncTenantForm } from "@/components/organisms/admin-sync-tenant-form";
 import { AdminOnboardingLinkForm } from "@/components/organisms/admin-onboarding-link-form";
 import { AdminOnboardingSummary } from "@/components/organisms/admin-onboarding-summary";
@@ -14,6 +15,7 @@ import { AdminDeleteTenantForm } from "@/components/organisms/admin-delete-tenan
 import {
   updateTenantAction,
   updateFeatureOverridesAction,
+  updateEnabledAddonsAction,
   syncTenantAction,
   generateOnboardingLinkAction,
   deleteTenantAction,
@@ -51,6 +53,7 @@ export default async function TenantDetailPage({ params }: { params: Promise<{ i
   const sectionNav = [
     { id: "registry", label: "Registry" },
     { id: "features", label: "Features" },
+    { id: "addons", label: "Add-ons" },
     { id: "sync", label: "Sync" },
     { id: "onboarding", label: "Onboarding" },
     ...(tenant.onboardingCompletedAt ? [{ id: "store-config", label: "Store config" }] : []),
@@ -81,7 +84,6 @@ export default async function TenantDetailPage({ params }: { params: Promise<{ i
                 name: tenant.name,
                 slug: tenant.slug,
                 status: tenant.status,
-                planId: tenant.planId,
                 databaseUrl: tenant.databaseUrl,
                 contactEmail: tenant.contactEmail ?? "",
                 notes: tenant.notes ?? "",
@@ -92,12 +94,12 @@ export default async function TenantDetailPage({ params }: { params: Promise<{ i
           <AdminSectionCard
             id="features"
             title="Feature overrides"
-            description="Override individual features on top of the tenant's plan. Save here, then sync to push changes."
+            description="Override individual features on top of the tenant's base + add-ons. Save here, then sync to push changes."
           >
             <div className="mb-lg rounded-button border border-outline-variant bg-surface-container-low px-md py-sm">
               <p className="text-label-md text-on-surface-variant mb-sm">Effective features</p>
               <AdminEffectiveFeatures
-                planId={tenant.planId}
+                enabledAddons={tenant.enabledAddons}
                 featureOverrides={tenant.featureOverrides}
               />
             </div>
@@ -106,13 +108,24 @@ export default async function TenantDetailPage({ params }: { params: Promise<{ i
               initial={initialOverrides}
             />
           </AdminSectionCard>
+
+          <AdminSectionCard
+            id="addons"
+            title="Add-ons"
+            description="Enable or remove paid add-ons for this tenant. Newly added add-ons are logged as a one-time purchase."
+          >
+            <AdminAddonsEditor
+              action={updateEnabledAddonsAction.bind(null, tenant.id)}
+              initial={(tenant.enabledAddons as string[]) ?? []}
+            />
+          </AdminSectionCard>
         </div>
 
         <aside className="flex flex-col gap-lg lg:sticky lg:top-24">
           <AdminSectionCard
             id="sync"
             title="Sync to tenant"
-            description="Pushes plan and feature overrides into this tenant's database."
+            description="Pushes add-ons and feature overrides into this tenant's database."
           >
             <AdminSyncTenantForm action={syncTenantAction.bind(null, tenant.id)} />
           </AdminSectionCard>

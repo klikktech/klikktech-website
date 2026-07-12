@@ -12,7 +12,6 @@ import { Select } from "@/components/atoms/select";
 import { Icon } from "@/components/atoms/icon";
 import { AdminSectionCard } from "@/components/molecules/admin-section-card";
 import { TenantStatusBadge } from "@/components/molecules/tenant-status-badge";
-import { PLAN_LABELS, type PlanId } from "@/core/logic/feature-keys";
 
 interface AdminTenantsTableProps {
   tenants: Tenant[];
@@ -25,8 +24,8 @@ function formatDate(date: Date) {
   return date.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
 }
 
-function formatPlan(planId: string) {
-  return PLAN_LABELS[planId as PlanId] ?? planId;
+function countAddons(enabledAddons: unknown) {
+  return Array.isArray(enabledAddons) ? enabledAddons.length : 0;
 }
 
 export function AdminTenantsTable({ tenants }: AdminTenantsTableProps) {
@@ -129,7 +128,7 @@ export function AdminTenantsTable({ tenants }: AdminTenantsTableProps) {
                 <th className="px-lg py-sm">Name</th>
                 <th className="px-lg py-sm">Slug</th>
                 <th className="px-lg py-sm">Status</th>
-                <th className="px-lg py-sm">Plan</th>
+                <th className="px-lg py-sm">Add-ons</th>
                 <th className="px-lg py-sm">Onboarding</th>
                 <th className="px-lg py-sm">Created</th>
               </tr>
@@ -158,7 +157,7 @@ export function AdminTenantsTable({ tenants }: AdminTenantsTableProps) {
                     <TenantStatusBadge status={tenant.status} />
                   </td>
                   <td className="px-lg py-md">
-                    <Badge variant="accent">{formatPlan(tenant.planId)}</Badge>
+                    <Badge variant="accent">{countAddons(tenant.enabledAddons)}</Badge>
                   </td>
                   <td className="px-lg py-md">
                     <Badge variant={tenant.onboardingCompletedAt ? "success" : "default"}>

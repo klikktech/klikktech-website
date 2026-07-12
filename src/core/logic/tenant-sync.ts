@@ -2,21 +2,28 @@ import "server-only";
 import { Client } from "pg";
 import type { Tenant } from "@/generated/prisma/client";
 
-// Pushes this control-plane Tenant row's planId/featureOverrides into the
-// tenant's own siloed Postgres database (retail-software's StoreSettings
-// table, id=1 singleton row) — the same columns its core/logic/features.ts
-// reads to resolve the tenant's effective feature set. Opens a short-lived
-// direct connection using the tenant's stored databaseUrl; never throws past
-// this boundary so the caller can surface a plain success/error message.
+// Pushes this control-plane Tenant row's enabledAddons/colorPaletteId/
+// featureOverrides into the tenant's own siloed Postgres database
+// (retail-software's StoreSettings table, id=1 singleton row) — the same
+// columns its core/logic/features.ts reads to resolve the tenant's effective
+// feature set. Used both by the post-onboarding "Sync" button and by the
+// add-ons editor action, since neither touches the onboarding-only fields
+// below. Opens a short-lived direct connection using the tenant's stored
+// databaseUrl; never throws past this boundary so the caller can surface a
+// plain success/error message.
 export async function syncFeaturesToTenant(
-  tenant: Pick<Tenant, "databaseUrl" | "planId" | "featureOverrides">
+  tenant: Pick<Tenant, "databaseUrl" | "enabledAddons" | "colorPaletteId" | "featureOverrides">
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   const client = new Client({ connectionString: tenant.databaseUrl });
   try {
     await client.connect();
     await client.query(
-      'UPDATE "StoreSettings" SET "planId" = $1, "featureOverrides" = $2 WHERE id = 1',
-      [tenant.planId, tenant.featureOverrides == null ? null : JSON.stringify(tenant.featureOverrides)]
+      'UPDATE "StoreSettings" SET "enabledAddons" = $1, "colorPaletteId" = $2, "featureOverrides" = $3 WHERE id = 1',
+      [
+        JSON.stringify(tenant.enabledAddons ?? []),
+        tenant.colorPaletteId,
+        tenant.featureOverrides == null ? null : JSON.stringify(tenant.featureOverrides),
+      ]
     );
     return { ok: true };
   } catch (err) {
@@ -29,9 +36,8 @@ export async function syncFeaturesToTenant(
 // Deliberately a separate function/UPDATE from syncFeaturesToTenant above,
 // not merged into one: this one is only ever called right after
 // completeOnboarding with freshly-validated, non-null form data. Merging
-// them would mean clicking the existing plan/feature "Sync" button before
-// onboarding is complete could blast the tenant's real storeName/etc. to
-// NULL.
+// them would mean clicking the existing "Sync" button before onboarding is
+// complete could blast the tenant's real storeName/etc. to NULL.
 export async function syncOnboardingToTenant(
   tenant: Pick<
     Tenant,
@@ -39,9 +45,8 @@ export async function syncOnboardingToTenant(
     | "storeName"
     | "themeId"
     | "logoUrl"
-    | "primaryColor"
-    | "secondaryColor"
-    | "accentColor"
+    | "colorPaletteId"
+    | "enabledAddons"
     | "contactEmail"
     | "contactPhone"
     | "currency"
@@ -56,21 +61,19 @@ export async function syncOnboardingToTenant(
         "storeName" = $1,
         "themeId" = $2,
         "logoUrl" = $3,
-        "primaryColor" = $4,
-        "secondaryColor" = $5,
-        "accentColor" = $6,
-        "contactEmail" = $7,
-        "contactPhone" = $8,
-        "currency" = $9,
-        "isStoreOpen" = $10
+        "colorPaletteId" = $4,
+        "enabledAddons" = $5,
+        "contactEmail" = $6,
+        "contactPhone" = $7,
+        "currency" = $8,
+        "isStoreOpen" = $9
       WHERE id = 1`,
       [
         tenant.storeName,
         tenant.themeId,
         tenant.logoUrl,
-        tenant.primaryColor,
-        tenant.secondaryColor,
-        tenant.accentColor,
+        tenant.colorPaletteId,
+        JSON.stringify(tenant.enabledAddons ?? []),
         tenant.contactEmail,
         tenant.contactPhone,
         tenant.currency,

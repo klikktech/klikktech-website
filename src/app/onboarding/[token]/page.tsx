@@ -1,5 +1,4 @@
 import { getTenantByOnboardingToken } from "@/core/logic/tenants";
-import { resolveFeatures, entitledThemeIds } from "@/core/logic/feature-keys";
 import { OnboardingForm } from "@/components/organisms/onboarding-form";
 import { completeOnboardingAction } from "./actions";
 
@@ -15,8 +14,6 @@ export default async function OnboardingPage({ params }: { params: Promise<{ tok
     );
   }
 
-  const availableThemes = entitledThemeIds(resolveFeatures(tenant));
-
   return (
     <div className="flex min-h-screen justify-center bg-surface-container-lowest px-md py-xl">
       <div className="w-full max-w-lg rounded-xl border border-outline-variant bg-surface p-xl">
@@ -26,14 +23,11 @@ export default async function OnboardingPage({ params }: { params: Promise<{ tok
         </p>
         <OnboardingForm
           action={completeOnboardingAction.bind(null, token)}
-          availableThemes={availableThemes}
           initial={{
             storeName: tenant.storeName ?? "",
-            themeId: tenant.themeId ?? "",
             logoUrl: tenant.logoUrl ?? "",
-            primaryColor: tenant.primaryColor ?? "",
-            secondaryColor: tenant.secondaryColor ?? "",
-            accentColor: tenant.accentColor ?? "",
+            colorPaletteId: tenant.colorPaletteId,
+            enabledAddons: (tenant.enabledAddons as string[]) ?? [],
             contactEmail: tenant.contactEmail ?? "",
             contactPhone: tenant.contactPhone ?? "",
             currency: tenant.currency ?? "USD",

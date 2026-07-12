@@ -55,16 +55,17 @@ model Tenant {
   slug   String       @unique
   status TenantStatus @default(TRIAL)
 
-  // planId values and featureOverrides shape ({ enabled?: string[], disabled?: string[] })
-  // must stay in sync with retail-software's core/logic/features.ts — there is no shared
-  // package between the two repos, so this is a documented manual contract, not a type-checked one.
-  planId           String @default("basic")
+  // enabledAddons/featureOverrides shape must stay in sync with retail-software's
+  // core/logic/features.ts + core/logic/addons.ts — there is no shared package between
+  // the two repos, so this is a documented manual contract, not a type-checked one.
+  enabledAddons    Json    @default("[]")
   featureOverrides Json?
 
   // Connection string to this tenant's own siloed Postgres database (retail-software's
   // StoreSettings table, id=1) — used only by the "sync to tenant" action to push
-  // planId/featureOverrides there. Plaintext in this pass (no secrets vault yet); acceptable
-  // for a single internal tenant, revisit before onboarding real customers.
+  // enabledAddons/colorPaletteId/featureOverrides there. Plaintext in this pass (no
+  // secrets vault yet); acceptable for a single internal tenant, revisit before
+  // onboarding real customers.
   databaseUrl String
 
   contactEmail String?
@@ -81,9 +82,7 @@ model Tenant {
   storeName      String?
   themeId        String?
   logoUrl        String?
-  primaryColor   String?
-  secondaryColor String?
-  accentColor    String?
+  colorPaletteId String  @default("slate")
   contactPhone   String?
   currency       String?
   isStoreOpen    Boolean @default(true)
@@ -92,6 +91,24 @@ model Tenant {
   onboardingTokenExpiresAt DateTime?
   onboardingCompletedAt    DateTime?
 
+  addonPurchases TenantAddonPurchase[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// One row per add-on transitioning off -> on for a tenant (one-time pricing,
+// charged at the point it's added). Snapshots label/price at purchase time so
+// historical invoicing survives future catalog price changes.
+model TenantAddonPurchase {
+  id         String   @id @default(cuid())
+  tenantId   String
+  tenant     Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  addonKey   String
+  label      String
+  priceCents Int
+  currency   String
+  createdAt  DateTime @default(now())
+
+  @@index([tenantId])
 }

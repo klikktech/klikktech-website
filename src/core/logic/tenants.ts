@@ -17,7 +17,6 @@ export interface TenantInput {
   name: string;
   slug: string;
   status: TenantStatus;
-  planId: string;
   databaseUrl: string;
   contactEmail?: string | null;
   notes?: string | null;
@@ -78,9 +77,7 @@ export interface OnboardingInput {
   storeName: string;
   themeId: string;
   logoUrl?: string | null;
-  primaryColor?: string | null;
-  secondaryColor?: string | null;
-  accentColor?: string | null;
+  colorPaletteId: string;
   contactEmail?: string | null;
   contactPhone?: string | null;
   currency: string;

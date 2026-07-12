@@ -75,9 +75,11 @@ This repo also hosts the **control-plane app** for the separate `retail-software
 
 - **Own Postgres + Prisma** (v7, driver-adapter, generator output `src/generated/prisma`, imported as `@/generated/prisma/client`) — entirely separate from any tenant's database. `prisma.config.ts` loads env from `.env.local` (this project's convention) rather than Prisma's `.env` default.
 - **Auth:** `AdminUser`/`AdminSession` (`src/core/logic/admin-auth.ts`) — single internal-ops login at `/admin/login` (dedicated page, not linked from the public navbar), hashed-token session in an `admin_session` cookie, mirrors retail-software's own `Staff`/`StaffSession` pattern. Unauthenticated `/admin` requests redirect to `/admin/login`. Route-gating uses a Next.js route-group split: `src/app/admin/(auth)/login/` is unguarded, `src/app/admin/(dashboard)/layout.tsx` calls `requireAdmin()` — a single `layout.tsx` directly at `src/app/admin/` would also wrap `/admin/login` and redirect-loop.
-- **Tenant registry** (`src/core/logic/tenants.ts`): `Tenant` rows hold `name`, `slug`, `status`, `planId`, `featureOverrides` (Json `{enabled?: string[], disabled?: string[]}`), and `databaseUrl` (plaintext in this pass — no secrets vault yet, acceptable for one internal tenant, revisit before onboarding real customers).
-- `src/core/logic/feature-keys.ts` — `FEATURE_KEYS`/`PLAN_IDS` are a **manually-synced copy** of retail-software's `core/logic/features.ts`; there's no shared package between the two repos, so keep this list in sync by hand whenever a feature key changes on that side.
-- **The sync mechanism** (`src/core/logic/tenant-sync.ts::syncFeaturesToTenant`) is the part that actually closes the loop: it opens a direct `pg.Client` connection using the tenant's stored `databaseUrl` and runs a parameterized `UPDATE "StoreSettings" SET "planId" = $1, "featureOverrides" = $2 WHERE id = 1` — the exact table/columns retail-software's `core/logic/features.ts::resolveFeatures()` reads. Triggered by a "Sync to tenant DB" button on `/admin/tenants/[id]`, surfaced as a plain success/error message rather than throwing.
+- **Tenant registry** (`src/core/logic/tenants.ts`): `Tenant` rows hold `name`, `slug`, `status`, `enabledAddons` (Json string array of purchased add-on keys — plan tiers/`planId` have been retired in favor of this single-base-package + à la carte model), `featureOverrides` (Json `{enabled?: string[], disabled?: string[]}`, a support-only override layer on top of `enabledAddons`), and `databaseUrl` (plaintext in this pass — no secrets vault yet, acceptable for one internal tenant, revisit before onboarding real customers).
+- `src/core/logic/feature-keys.ts` (`FEATURE_KEYS`), `src/core/logic/color-palettes.ts`, and `src/core/logic/addon-catalog.ts` (which carries pricing — this repo is the source of truth for cost, unlike retail-software's display-only copy) are **manually-synced copies** of retail-software's `core/logic/features.ts`/`lib/color-palettes.ts`/`core/logic/addons.ts`; there's no shared package between the two repos, so keep these in sync by hand whenever a feature/palette/addon key changes on that side.
+- A new `TenantAddonPurchase` row is logged (via `src/core/logic/tenant-addons.ts::applyEnabledAddons`, shared by onboarding submission and the post-onboarding editor below) each time an add-on key transitions off→on, snapshotting its label/price at that moment — one-time pricing, charged again if an add-on is removed and later re-added. No pricing/billing model exists for `pos`, which stays base-included for every tenant rather than becoming a paid add-on.
+- **Editing add-ons after onboarding**: `/admin/tenants/[id]`'s "Add-ons" card (`AdminAddonsEditor` + `updateEnabledAddonsAction`) lets the super admin toggle a tenant's add-ons any time, not just at signup — mirrors the existing `AdminFeatureOverridesEditor` pattern, then re-syncs.
+- **The sync mechanism** (`src/core/logic/tenant-sync.ts::syncFeaturesToTenant`) is the part that actually closes the loop for post-onboarding add-on/override changes: it opens a direct `pg.Client` connection using the tenant's stored `databaseUrl` and runs a parameterized `UPDATE "StoreSettings" SET "enabledAddons" = $1, "colorPaletteId" = $2, "featureOverrides" = $3 WHERE id = 1` — the exact table/columns retail-software's `core/logic/features.ts::resolveFeatures()` reads. Triggered by a "Sync to tenant DB" button on `/admin/tenants/[id]`, surfaced as a plain success/error message rather than throwing.
 - Tenant create/edit are plain pages (`/admin/tenants/new`, `/admin/tenants/[id]`), not modals — unlike retail-software's own admin (which uses modals per its CLAUDE.md convention), this repo has no `Modal` primitive and is a much smaller two-screen internal tool, so a dedicated component wasn't worth adding.
 - **Automated local provisioning** (`src/core/logic/tenant-provisioning.ts::provisionTenantDatabase`, wired to `provisionTenantAction` behind `/admin/tenants/new`'s form): creates a fresh Postgres database on the same local server that hosts retail-software's sample tenant (`TENANT_DB_ADMIN_URL`, a separate database per tenant rather than a separate server — the local stand-in for a real per-tenant managed instance), shells out to retail-software's own `npx prisma migrate deploy` against it (`RETAIL_SOFTWARE_REPO_PATH` — assumes that repo is checked out as a sibling directory on this machine; a real pipeline would package migrations as a build artifact instead), then seeds just enough via raw `pg` inserts for the tenant to log in for the first time: the `StoreSettings` singleton row (placeholder `storeName`, real values come later from onboarding) and one `TENANT_ADMIN` `Staff` row with a random temp password. That password and the admin email are returned once in the action's response state (never persisted in plaintext, same one-time-reveal pattern as the onboarding link) before the control-plane `Tenant` record is created pointing at the new `databaseUrl`.
   - **Both env vars are local-only** — neither a Postgres admin connection nor a sibling repo checkout exists in a deployed environment (e.g. Vercel). `isAutoProvisioningConfigured()` checks both are set; `/admin/tenants/new` falls back to the original manual flow (`createTenantAction`, plain `AdminTenantForm` with a hand-typed `databaseUrl`) whenever they're not, rather than showing a form that would always fail with a provisioning error.
@@ -86,13 +88,13 @@ This repo also hosts the **control-plane app** for the separate `retail-software
 
 ### Tenant onboarding (`/onboarding/[token]`)
 
-The tenant's own store configuration (store name, logo, theme, contact info, currency, brand colors, open/closed) is filled in by **the tenant themselves**, not the super admin — and afterward read-only in their retail-software `/admin/settings`. Access is a one-time magic link, not a password account, since the link only ever renders this one form:
+The tenant's own store configuration (store name, logo, contact info, currency, color preset, add-ons, open/closed) is filled in by **the tenant themselves**, not the super admin — and afterward read-only in their retail-software `/admin/settings`. Access is a one-time magic link, not a password account, since the link only ever renders this one form:
 
-- `generateOnboardingLink()` / `getTenantByOnboardingToken()` / `completeOnboarding()` (`src/core/logic/tenants.ts`) mint a token (hash + 7-day expiry stored on `Tenant`, raw token shown exactly once), validate it, and on submit clear the hash (single-use) — reusing `generateSessionToken`/`hashToken` from `src/core/logic/session-token.ts` rather than new crypto code. Regenerating a link later (e.g. to fix a typo) doesn't gate on `onboardingCompletedAt`, so it just reopens the same form pre-filled with current values.
+- `generateOnboardingLink()` / `getTenantByOnboardingToken()` / `completeOnboarding()` (`src/core/logic/tenants.ts`) mint a token (hash + 7-day expiry stored on `Tenant`, raw token shown exactly once), validate it, and on submit clear the hash (single-use) — reusing `generateSessionToken`/`hashToken` from `src/core/logic/session-token.ts` rather than new crypto code. Regenerating a link later (e.g. to fix a typo) doesn't gate on `onboardingCompletedAt`, so it just reopens the same form pre-filled with current values (including the tenant's current `colorPaletteId`/`enabledAddons`).
 - `src/app/onboarding/[token]/page.tsx` has **no admin auth** — the token in the URL is the entire access control, same trust model as a password-reset link.
-- `src/core/logic/feature-keys.ts` also carries a manually-synced copy of retail-software's `resolveFeatures()`/`entitledThemeIds()` (not just the key lists) — this is the only remaining place that enforces "only show/accept themes this tenant's plan actually entitles," since retail-software's own settings page no longer validates anything (it's read-only display now).
+- The form (`src/components/organisms/onboarding-form/onboarding-form.tsx`) is a **4-step wizard** (store info → color preset → add-ons → review) implemented as client-side step state over one `<form>`, not per-step server round-trips — all fields stay mounted across steps (conditionally hidden via CSS), so `FormData` always contains everything regardless of which step is visible, and `completeOnboardingAction` still runs as a single terminal `useActionState` submission exactly as before. The color-preset step renders `PalettePreviewCard` (`src/components/molecules/palette-preview-card/`) — a **static mock** (mini header/CTA/product-card styled from the palette's 3 hex values), not an iframe into a live tenant storefront. `themeId` is hardcoded to `"modern"` on submit — the layout-theme picker was removed along with `primaryColor`/`secondaryColor`/`accentColor`.
 - The logo is a real file upload, stored in **this repo's own** Vercel Blob store (`src/lib/uploads.ts::saveUploadedImage`, `@vercel/blob`'s `put()` — same swap made in retail-software, since Vercel's serverless filesystem is read-only) rather than the tenant's — there's no shared storage between the two servers. It returns Blob's own absolute URL, and retail-software just renders it as an ordinary external `<img src>` (`StoreLogo.tsx` already does this, no `next/image` domain config needed). Requires `BLOB_READ_WRITE_TOKEN` in `.env.local`.
-- `src/core/logic/tenant-sync.ts::syncOnboardingToTenant` is a **separate** function/UPDATE from `syncFeaturesToTenant`, deliberately not merged — combining them would mean clicking the existing plan/feature "Sync" button before onboarding is complete could blast the tenant's real `storeName`/etc. to `NULL`.
+- `src/core/logic/tenant-sync.ts::syncOnboardingToTenant` is a **separate** function/UPDATE from `syncFeaturesToTenant`, deliberately not merged — combining them would mean clicking the existing add-ons/feature "Sync" button before onboarding is complete could blast the tenant's real `storeName`/etc. to `NULL`.
 - The super admin's only involvement is generating/regenerating the link from `/admin/tenants/[id]` (`generateOnboardingLinkAction`) — the raw link is returned once in the action's response state and never persisted in plaintext.
 
 ## Project-specific conventions (from Cursor rules)
@@ -116,6 +118,8 @@ The tenant's own store configuration (store name, logo, theme, contact info, cur
 │   │   ├── 20260707052931_init
 │   │   │   └── migration.sql
 │   │   ├── 20260707053000_add_onboarding
+│   │   │   └── migration.sql
+│   │   ├── 20260712100000_onboarding_overhaul_color_palette_addons
 │   │   │   └── migration.sql
 │   │   └── migration_lock.toml
 │   ├── schema.prisma
@@ -281,10 +285,16 @@ The tenant's own store configuration (store name, logo, theme, contact info, cur
 │   │   │   ├── theme-toggle
 │   │   │   │   ├── index.ts
 │   │   │   │   └── theme-toggle.tsx
+│   │   │   ├── palette-preview-card
+│   │   │   │   ├── index.ts
+│   │   │   │   └── palette-preview-card.tsx
 │   │   │   └── testimonial-card
 │   │   │       ├── index.ts
 │   │   │       └── testimonial-card.tsx
 │   │   ├── organisms
+│   │   │   ├── admin-addons-editor
+│   │   │   │   ├── admin-addons-editor.tsx
+│   │   │   │   └── index.ts
 │   │   │   ├── admin-dashboard-stats
 │   │   │   │   ├── admin-dashboard-stats.tsx
 │   │   │   │   └── index.ts
@@ -361,10 +371,13 @@ The tenant's own store configuration (store name, logo, theme, contact info, cur
 │   │           └── marketing-layout.tsx
 │   ├── core
 │   │   └── logic
+│   │       ├── addon-catalog.ts
 │   │       ├── admin-auth.ts
+│   │       ├── color-palettes.ts
 │   │       ├── feature-keys.ts
 │   │       ├── password.ts
 │   │       ├── session-token.ts
+│   │       ├── tenant-addons.ts
 │   │       ├── tenant-provisioning.ts
 │   │       ├── tenant-sync.ts
 │   │       └── tenants.ts

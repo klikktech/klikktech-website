@@ -34,7 +34,6 @@ async function main() {
       name: "Sample Tenant",
       slug: "sample-tenant",
       status: "ACTIVE",
-      planId: "basic",
       databaseUrl: "postgresql://retail:retail_dev_password@localhost:5432/retail_sample_tenant?schema=public",
       contactEmail: "admin@sample-tenant.test",
       notes: "Local retail-software dev tenant (retail-tenant-sample Docker container).",

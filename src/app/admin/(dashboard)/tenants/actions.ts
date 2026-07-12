@@ -18,7 +18,9 @@ import {
   canDeprovisionTenantDatabase,
 } from "@/core/logic/tenant-provisioning";
 import { syncFeaturesToTenant } from "@/core/logic/tenant-sync";
-import { PLAN_IDS, FEATURE_KEYS } from "@/core/logic/feature-keys";
+import { FEATURE_KEYS } from "@/core/logic/feature-keys";
+import { applyEnabledAddons } from "@/core/logic/tenant-addons";
+import { ADDON_KEYS } from "@/core/logic/addon-catalog";
 import { deleteUploadedImageIfLocal } from "@/lib/uploads";
 import { siteUrl } from "@/lib/seo/site-config";
 import type { TenantStatus } from "@/generated/prisma/client";
@@ -34,7 +36,6 @@ function parseTenantInput(formData: FormData): TenantInput | { error: string } {
   const name = String(formData.get("name") ?? "").trim();
   const slug = String(formData.get("slug") ?? "").trim().toLowerCase();
   const status = String(formData.get("status") ?? "TRIAL") as TenantStatus;
-  const planId = String(formData.get("planId") ?? "basic");
   const databaseUrl = String(formData.get("databaseUrl") ?? "").trim();
   const contactEmail = String(formData.get("contactEmail") ?? "").trim();
   const notes = String(formData.get("notes") ?? "").trim();
@@ -42,13 +43,11 @@ function parseTenantInput(formData: FormData): TenantInput | { error: string } {
   if (!name) return { error: "Name is required." };
   if (!slug) return { error: "Slug is required." };
   if (!databaseUrl) return { error: "Database URL is required." };
-  if (!(PLAN_IDS as readonly string[]).includes(planId)) return { error: "Invalid plan." };
 
   return {
     name,
     slug,
     status,
-    planId,
     databaseUrl,
     contactEmail: contactEmail || null,
     notes: notes || null,
@@ -57,19 +56,17 @@ function parseTenantInput(formData: FormData): TenantInput | { error: string } {
 
 function parseProvisionInput(
   formData: FormData
-): { name: string; slug: string; planId: string; contactEmail: string; notes: string | null } | { error: string } {
+): { name: string; slug: string; contactEmail: string; notes: string | null } | { error: string } {
   const name = String(formData.get("name") ?? "").trim();
   const slug = String(formData.get("slug") ?? "").trim().toLowerCase();
-  const planId = String(formData.get("planId") ?? "basic");
   const contactEmail = String(formData.get("contactEmail") ?? "").trim();
   const notes = String(formData.get("notes") ?? "").trim();
 
   if (!name) return { error: "Name is required." };
   if (!slug) return { error: "Slug is required." };
   if (!contactEmail) return { error: "Contact email is required — it becomes the tenant's first admin login." };
-  if (!(PLAN_IDS as readonly string[]).includes(planId)) return { error: "Invalid plan." };
 
-  return { name, slug, planId, contactEmail, notes: notes || null };
+  return { name, slug, contactEmail, notes: notes || null };
 }
 
 // Manual fallback for environments where auto-provisioning isn't configured
@@ -118,7 +115,6 @@ export async function provisionTenantAction(
     name: input.name,
     slug: input.slug,
     status: "TRIAL",
-    planId: input.planId,
     databaseUrl: provisioned.databaseUrl,
     contactEmail: input.contactEmail,
     notes: input.notes,
@@ -161,6 +157,25 @@ export async function updateFeatureOverridesAction(
 
   await updateFeatureOverrides(id, { enabled, disabled });
   revalidatePath(`/admin/tenants/${id}`);
+  return {};
+}
+
+export async function updateEnabledAddonsAction(
+  id: string,
+  _prevState: FormState | undefined,
+  formData: FormData
+): Promise<FormState> {
+  await requireAdmin();
+  const tenant = await getTenant(id);
+  if (!tenant) return { error: "Tenant not found." };
+
+  const selected = ADDON_KEYS.filter((key) => formData.get(key) === "on");
+  await applyEnabledAddons(id, selected, (tenant.enabledAddons as string[]) ?? []);
+
+  const updated = await getTenant(id);
+  const result = await syncFeaturesToTenant(updated!);
+  revalidatePath(`/admin/tenants/${id}`);
+  if (!result.ok) return { error: `Saved, but failed to sync to store: ${result.error}` };
   return {};
 }
 

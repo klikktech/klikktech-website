@@ -2,12 +2,12 @@ import { Tag } from "@/components/atoms/tag";
 import { FEATURE_LABELS, resolveFeatures, type FeatureKey } from "@/core/logic/feature-keys";
 
 type AdminEffectiveFeaturesProps = {
-  planId: string;
+  enabledAddons: unknown;
   featureOverrides: unknown;
 };
 
-export function AdminEffectiveFeatures({ planId, featureOverrides }: AdminEffectiveFeaturesProps) {
-  const features = resolveFeatures({ planId, featureOverrides });
+export function AdminEffectiveFeatures({ enabledAddons, featureOverrides }: AdminEffectiveFeaturesProps) {
+  const features = resolveFeatures({ enabledAddons, featureOverrides });
   const sorted = [...features].sort();
 
   if (sorted.length === 0) {

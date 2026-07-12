@@ -3,13 +3,11 @@
 import Link from "next/link";
 import { useActionState } from "react";
 import { Input } from "@/components/atoms/input";
-import { Select } from "@/components/atoms/select";
 import { Textarea } from "@/components/atoms/textarea";
 import { Button } from "@/components/atoms/button";
 import { FormField } from "@/components/molecules/form-field";
 import { AdminFormFeedback } from "@/components/molecules/admin-form-feedback";
 import { AdminSecretReveal } from "@/components/molecules/admin-secret-reveal";
-import { PLAN_IDS, PLAN_LABELS } from "@/core/logic/feature-keys";
 
 type FormState = {
   error?: string;
@@ -19,8 +17,6 @@ type FormState = {
 interface ProvisionTenantFormProps {
   action: (state: FormState | undefined, formData: FormData) => Promise<FormState>;
 }
-
-const PLAN_OPTIONS = PLAN_IDS.map((id) => ({ label: PLAN_LABELS[id], value: id }));
 
 export function ProvisionTenantForm({ action }: ProvisionTenantFormProps) {
   const [state, formAction, pending] = useActionState(action, undefined);
@@ -62,14 +58,9 @@ export function ProvisionTenantForm({ action }: ProvisionTenantFormProps) {
           />
         </FormField>
       </div>
-      <div className="grid gap-md sm:grid-cols-2">
-        <FormField id="planId" label="Plan">
-          <Select id="planId" name="planId" options={PLAN_OPTIONS} defaultValue="basic" />
-        </FormField>
-        <FormField id="contactEmail" label="Contact email">
-          <Input id="contactEmail" name="contactEmail" type="email" required />
-        </FormField>
-      </div>
+      <FormField id="contactEmail" label="Contact email">
+        <Input id="contactEmail" name="contactEmail" type="email" required />
+      </FormField>
       <FormField id="notes" label="Notes">
         <Textarea id="notes" name="notes" rows={3} className="min-h-0" />
       </FormField>

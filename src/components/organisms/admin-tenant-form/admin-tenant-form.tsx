@@ -10,7 +10,6 @@ import { Button } from "@/components/atoms/button";
 import { Icon } from "@/components/atoms/icon";
 import { FormField } from "@/components/molecules/form-field";
 import { AdminFormFeedback } from "@/components/molecules/admin-form-feedback";
-import { PLAN_IDS, PLAN_LABELS, type PlanId } from "@/core/logic/feature-keys";
 
 type FormState = { error?: string };
 
@@ -18,7 +17,6 @@ interface TenantFormInitial {
   name: string;
   slug: string;
   status: string;
-  planId: string;
   databaseUrl: string;
   contactEmail: string;
   notes: string;
@@ -35,8 +33,6 @@ const STATUS_OPTIONS = [
   { label: "Active", value: "ACTIVE" },
   { label: "Suspended", value: "SUSPENDED" },
 ];
-
-const PLAN_OPTIONS = PLAN_IDS.map((id) => ({ label: PLAN_LABELS[id], value: id }));
 
 export function AdminTenantForm({ action, initial, submitLabel = "Save" }: AdminTenantFormProps) {
   const [state, formAction, pending] = useActionState(action, undefined);
@@ -59,19 +55,9 @@ export function AdminTenantForm({ action, initial, submitLabel = "Save" }: Admin
           />
         </FormField>
       </div>
-      <div className="grid gap-md sm:grid-cols-2">
-        <FormField id="status" label="Status">
-          <Select id="status" name="status" options={STATUS_OPTIONS} defaultValue={initial?.status ?? "TRIAL"} />
-        </FormField>
-        <FormField id="planId" label="Plan">
-          <Select
-            id="planId"
-            name="planId"
-            options={PLAN_OPTIONS}
-            defaultValue={(initial?.planId as PlanId) ?? "basic"}
-          />
-        </FormField>
-      </div>
+      <FormField id="status" label="Status">
+        <Select id="status" name="status" options={STATUS_OPTIONS} defaultValue={initial?.status ?? "TRIAL"} />
+      </FormField>
       <FormField id="contactEmail" label="Contact email">
         <Input id="contactEmail" name="contactEmail" type="email" defaultValue={initial?.contactEmail} />
       </FormField>

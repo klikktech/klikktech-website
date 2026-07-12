@@ -16,7 +16,7 @@ interface AdminFeatureOverridesEditorProps {
 }
 
 const OPTIONS = [
-  { label: "Inherit from plan", value: "" },
+  { label: "Inherit from base/add-ons", value: "" },
   { label: "Force on", value: "enabled" },
   { label: "Force off", value: "disabled" },
 ];

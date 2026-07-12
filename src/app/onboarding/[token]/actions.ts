@@ -6,7 +6,9 @@ import {
   type OnboardingInput,
 } from "@/core/logic/tenants";
 import { syncOnboardingToTenant } from "@/core/logic/tenant-sync";
-import { resolveFeatures, entitledThemeIds } from "@/core/logic/feature-keys";
+import { applyEnabledAddons } from "@/core/logic/tenant-addons";
+import { COLOR_PALETTE_IDS } from "@/core/logic/color-palettes";
+import { ADDON_KEYS } from "@/core/logic/addon-catalog";
 import { saveUploadedImage } from "@/lib/uploads";
 
 type FormState = { error?: string; success?: boolean };
@@ -42,20 +44,23 @@ export async function completeOnboardingAction(
   if (!storeName) return { error: "Store name is required." };
   if (!currency) return { error: "Currency is required." };
 
-  const allowedThemes = entitledThemeIds(resolveFeatures(tenant));
-  const submittedTheme = String(formData.get("themeId") ?? "");
-  const themeId = (allowedThemes as string[]).includes(submittedTheme) ? submittedTheme : allowedThemes[0];
+  const submittedPalette = String(formData.get("colorPaletteId") ?? "");
+  const colorPaletteId = (COLOR_PALETTE_IDS as readonly string[]).includes(submittedPalette)
+    ? submittedPalette
+    : "slate";
+
+  const selectedAddons = ADDON_KEYS.filter((key) => formData.get(key) === "on");
 
   const { logoUrl, error: logoError } = await resolveLogoUrl(formData, tenant.logoUrl);
   if (logoError) return { error: logoError };
 
+  await applyEnabledAddons(tenant.id, selectedAddons, (tenant.enabledAddons as string[]) ?? []);
+
   const input: OnboardingInput = {
     storeName,
-    themeId,
+    themeId: "modern",
     logoUrl,
-    primaryColor: String(formData.get("primaryColor") ?? "").trim() || null,
-    secondaryColor: String(formData.get("secondaryColor") ?? "").trim() || null,
-    accentColor: String(formData.get("accentColor") ?? "").trim() || null,
+    colorPaletteId,
     contactEmail: String(formData.get("contactEmail") ?? "").trim() || null,
     contactPhone: String(formData.get("contactPhone") ?? "").trim() || null,
     currency,
